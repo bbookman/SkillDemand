@@ -18,6 +18,10 @@ KEYWORDS = [
 ]
 
 
+TITLE_MATCH_THRESHOLD = 90
+
+TITLES = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+
 
 
 
