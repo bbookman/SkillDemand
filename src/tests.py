@@ -42,3 +42,15 @@ def test_parse_site_for_jd_links():
     p = parse_site_for_jd_links(url, link_finders)
     assert isinstance(p, list)
     assert isinstance(p[0], str)
+
+def test_build_site_url():
+    template = 'TITLE:{}, JOBTYPE:{}, SALARY:{}, LOCATION:{}, DISTANCE:{}, POST_AGE:{}'
+    title = 'test_title'
+    jobtype = 'test_jobtype'
+    salary = 'test_salary'
+    location = 'test_location'
+    distance = 'test_distance'
+    age = 'test_age'
+    result = test_build_site_url(template, title, jobtype, salary, location,distance,age)
+    expected ='TITLE:test_title, JOBTYPE:test_jobtype, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
+    assert result == expected
