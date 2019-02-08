@@ -1,4 +1,6 @@
+from .main import *
 from .constants import *
+
 
 
 def test_site_root_urls_exist():
@@ -26,7 +28,7 @@ def test_site_template_url():
     test_url = INDEED_URL_TEMPATE.format('TITLE', 'FULLTIME', '100000', '100', 'LOCATION', 'AGE', 'LIMIT')
     assert expected == test_url
 
-#TODO Remove hardcoded keywords if UI happens
+#TODO Remove hardcoded keywords if UI happens, hence test below is invalid
 
 def test_keywords():
     assert KEYWORDS
@@ -34,3 +36,21 @@ def test_keywords():
     is_string = [True for keyword in KEYWORDS if isinstance(keyword, str)]
     assert is_string
 
+def test_parse_site_for_jd_links():
+    url = 'https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose,+CA&fromage=300&limit=50&sort=&psf=advsrch'
+    link_finders = ['a', "jobtitle turnstileLink"]
+    p = parse_site_for_jd_links(url, link_finders)
+    assert isinstance(p, list)
+    assert isinstance(p[0], str)
+
+def test_build_site_url():
+    template = 'TITLE:{}, JOBTYPE:{}, SALARY:{}, LOCATION:{}, DISTANCE:{}, POST_AGE:{}'
+    title = 'test_title'
+    jobtype = 'test_jobtype'
+    salary = 'test_salary'
+    location = 'test_location'
+    distance = 'test_distance'
+    age = 'test_age'
+    result = test_build_site_url(template, title, jobtype, salary, location,distance,age)
+    expected ='TITLE:test_title, JOBTYPE:test_jobtype, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
+    assert result == expected
