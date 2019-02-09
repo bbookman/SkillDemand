@@ -17,3 +17,14 @@ def parse_site_for_jd_links(url, link_finders):
 
 def build_site_url(template, title, jobtype, salary, location, distance, age):
     return template.format(title, jobtype, salary, location, distance, age)
+
+def filter_titles(title_dict, links, threshold):
+    result = []
+    for link in links:
+        total = 0
+        for key, value in title_dict.items():
+            if key in link:
+                total += value
+        if total > threshold:
+            result.append(link)
+    return result

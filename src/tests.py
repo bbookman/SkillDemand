@@ -54,3 +54,21 @@ def test_build_site_url():
     result = test_build_site_url(template, title, jobtype, salary, location,distance,age)
     expected ='TITLE:test_title, JOBTYPE:test_jobtype, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
     assert result == expected
+
+def test_filter_titles():
+    title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+    links = [
+        'software',
+        'software quality',
+        'software qualit assurance',
+        'http://www.blah.com?fred="sdet"'
+        'automation quality'
+    ]
+    expected = [
+        'software qualit assurance',
+        'http://www.blah.com?fred="sdet"'
+        'automation quality'
+    ]
+    threshold = 90
+    result = filter_titles(title_dict, links, threshold)
+    assert result == expected
