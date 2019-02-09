@@ -84,3 +84,44 @@ def test_remove_stop_words_from_bodies():
     ]
 
     result = remove_stop_words_from_bodies(bodies)
+
+def test_remove_html_from_bodies():
+    bodies = [
+        'this body contains <a href> HTML <b> that should <b>be removed</b>  <div> <script></script> ',
+        '<h1 style="color: blue"> Hello world! </h1>',
+        '<style>h1 { color: blue;</style>My favorite'
+    ]
+    expected = [
+
+    ]
+
+    result = remove_html_from_bodies(bodies)
+    assert result == expected
+
+def test_get_skill_counts_unique_appearance_of_skill():
+    bodies = [
+        'this body should produce a count of one for java java java and not three or more java java javascript'
+    ]
+    skill_list = [
+        'java'
+    ]
+    expected = {
+    'java':1
+    }
+    result = get_skill_counts(bodies, skill_list)
+    assert result == expected
+
+def test_get_skill_counts():
+    bodies = [
+
+    ]
+
+    skill_list = [
+
+    ]
+
+    expected = [
+
+    ]
+    result = get_skill_counts(bodies, skill_list)
+    assert result == expected
