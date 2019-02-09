@@ -37,7 +37,7 @@ def test_build_site_url():
     location = 'test_location'
     distance = 'test_distance'
     age = 'test_age'
-    result = test_build_site_url(template, title, jobtype, salary, location,distance,age)
+    result = test_build_site_url(template, title, salary, location, distance, age, jobtype )
     expected ='TITLE:test_title, JOBTYPE:test_jobtype, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
     assert result == expected
 
@@ -63,3 +63,12 @@ def test_get_jd_bodies():
     result = get_jd_bodies(urls)
     assert isinstance(result, list)
     assert isinstance(result[0], str)
+
+def test_get_related_titles():
+    links = [
+        'http://blah.com&title=Fred+Flintstone',
+        'http://wee.com?h=foo&t=bar&title=Barny Rubbel'
+    ]
+    expected = ['Fred+Flintstone', 'Barny Rubbel']
+    result = get_related_titles(title_locator, links)
+    assert result == expected

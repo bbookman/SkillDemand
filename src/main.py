@@ -23,7 +23,7 @@ def parse_site_for_jd_links(url, link_finders):
     return str_links
 
 
-def build_site_url(template, title, jobtype, salary, location, distance, age):
+def build_site_url(template, title, salary, location, distance, age, jobtype = None):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
@@ -36,7 +36,8 @@ def build_site_url(template, title, jobtype, salary, location, distance, age):
 
     returns an url string
     """
-    return template.format(title, jobtype, salary, location, distance, age)
+    return template.format(title, salary, location, distance, age, jobtype)
+
 
 def filter_titles(title_dict, links, threshold):
     """ Uses title key words and a weight for each word to evaluate matching job titles
@@ -73,3 +74,25 @@ def get_jd_bodies(urls):
         body = soup('body')
         bodies.append(str(body))
     return bodies
+
+def get_related_titles(title_locator, links):
+    """ Allows front end to display job titles related to the one queried
+
+    title_locator: type= string, unique query item in url indicating job title
+    links: type = list, list of job description links
+
+    returns list containing strings of job titles 
+    """
+    titles = []
+    for link in links:
+        title_query_item_start_loc = link.find(title_locator)
+        title_and_more = link[title_query_item_start_loc  + len(title_locator):]
+        print(f'title_and_more:{title_and_more } ')
+        title_end_loc = title_and_more.find('&')
+        print(f'title_end_loc:{title_end_loc}')
+        if title_end_loc > 0:
+            title = title_and_more[:title_end_loc]
+        else:
+            title = title_and_more
+        titles.append(title)
+    return titles
