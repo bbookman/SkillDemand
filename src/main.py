@@ -23,7 +23,7 @@ def parse_site_for_jd_links(url, link_finders):
     return str_links
 
 
-def build_site_url(template, title, jobtype, salary, location, distance, age):
+def build_site_url(template, title, salary, location, distance, age, jobtype = None):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
@@ -36,7 +36,8 @@ def build_site_url(template, title, jobtype, salary, location, distance, age):
 
     returns an url string
     """
-    return template.format(title, jobtype, salary, location, distance, age)
+    return template.format(title, salary, location, distance, age, jobtype)
+
 
 def filter_titles(title_dict, links, threshold):
     """ Uses title key words and a weight for each word to evaluate matching job titles
