@@ -109,3 +109,36 @@ def remove_stop_words_from_bodies(bodies):
     returns: list of strings with stop words removed
     """
     pass
+
+def remove_html_from_bodies(bodies):
+    """ Removes html tags from body of job description
+
+    possibly use:
+        https://tutorialedge.net/python/removing-html-from-string/
+        https://rushter.com/blog/python-fast-html-parser/
+        https://community.esri.com/thread/207202-how-to-use-beautiful-soup-to-remove-html-tags-from-arcgis-metadata
+        https://www.dotnetperls.com/remove-html-tags-python
+        https://www.laurivan.com/strip-html-tags-in-python/
+        https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
+        https://bytes.com/topic/python/answers/33816-easy-way-remove-html-entities-html-document
+
+    bodies: type = list of strings
+    return: list of strings with as much html and javascript removed as possible
+    """
+    pass
+
+def get_skill_counts(bodies, skill_list):
+    """ Counts the UNIQUE time a skill is present in the body of a job description
+
+    bodies: list of strings
+    skill_list: list of strings to match / count
+    returns: dictionary.  Keys are the skill, values are the total counts for
+             each instance a skill appears once in a job body
+
+    example result:
+        {'java': 30, 'maven: 3', 'python': 28}  .. this means there were 30 job descriptions
+        which used the word java ONCE
+
+    hint:  LOWERCASE the bodies, the skill list, and the results using string.lower()
+    """
+    pass
