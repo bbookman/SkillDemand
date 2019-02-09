@@ -72,3 +72,8 @@ def test_filter_titles():
     threshold = 90
     result = filter_titles(title_dict, links, threshold)
     assert result == expected
+
+def test_get_jd_bodies():
+    result = get_jd_bodies(urls)
+    assert isinstance(result, list)
+    assert isinstance(result[0], str)
