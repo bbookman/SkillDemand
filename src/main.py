@@ -108,7 +108,7 @@ def remove_stop_words(list_of_texts):
 
     bodies: type = list of strings
 
-    returns: list of strings with stop words removed
+    returns: list of SINGLE WORD strings with stop words removed
     """
     pass
 
@@ -125,7 +125,7 @@ def remove_html_from_bodies(bodies):
         https://bytes.com/topic/python/answers/33816-easy-way-remove-html-entities-html-document
 
     bodies: type = list of strings
-    return: list of strings with as much html and javascript removed as possible
+    return: list of SINGLE WORD strings with as much html and javascript removed as possible
     """
     pass
 
