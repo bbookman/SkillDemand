@@ -2,7 +2,6 @@ from .main import *
 from .constants import *
 
 
-
 def test_site_root_urls_exist():
     assert INDEED_ROOT_URL
     assert isinstance(INDEED_ROOT_URL, str)
@@ -72,3 +71,16 @@ def test_get_related_titles():
     expected = ['Fred+Flintstone', 'Barny Rubbel']
     result = get_related_titles(title_locator, links)
     assert result == expected
+
+def test_remove_stop_words_from_bodies():
+    bodies = [
+    'this is a body of <b>text</b> and has some stop words as well as non-stop words',
+    'SDET  Java Python the and of a'
+    ]
+    expected = [
+
+
+
+    ]
+
+    result = remove_stop_words_from_bodies(bodies)
