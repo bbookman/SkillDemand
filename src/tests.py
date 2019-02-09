@@ -125,3 +125,10 @@ def test_get_skill_counts():
     ]
     result = get_skill_counts(bodies, skill_list)
     assert result == expected
+
+def test_build_title_only_url():
+    template = 'http://hithere.com?{}&oh'
+    title = 'TITLE'
+    expected = 'http://hithere.com?TITLE&oh'
+    result = build_title_only_url(template, title)
+    assert result == expected
