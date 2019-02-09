@@ -2,9 +2,9 @@ import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
 from constants import *
 import ssl
+from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
-INDEED_URL_TEMPATE = 'https://www.indeed.com/jobs?as_and={}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt={}&st=&as_src=&salary={}&radius={}&l={}fromage={}&limit=500&sort=&psf=advsrch'
 
 def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
@@ -81,7 +81,7 @@ def get_related_titles(title_locator, links):
     title_locator: type= string, unique query item in url indicating job title
     links: type = list, list of job description links
 
-    returns list containing strings of job titles 
+    returns list containing strings of job titles
     """
     titles = []
     for link in links:
@@ -96,3 +96,16 @@ def get_related_titles(title_locator, links):
             title = title_and_more
         titles.append(title)
     return titles
+
+def remove_stop_words_from_bodies(bodies):
+    """ Removes English stop words from the body of job description
+    use:
+
+        https://pythonspot.com/tokenizing-words-and-sentences-with-nltk/
+        https://pythonspot.com/nltk-stop-words/
+
+    bodies: type = list of strings
+
+    returns: list of strings with stop words removed
+    """
+    pass
