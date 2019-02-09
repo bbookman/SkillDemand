@@ -74,3 +74,25 @@ def get_jd_bodies(urls):
         body = soup('body')
         bodies.append(str(body))
     return bodies
+
+def get_related_titles(title_locator, links):
+    """ Allows front end to display job titles related to the one queried
+
+    title_locator: type= string, unique query item in url indicating job title
+    links: type = list, list of job description links
+
+    returns list containing strings of job titles 
+    """
+    titles = []
+    for link in links:
+        title_query_item_start_loc = link.find(title_locator)
+        title_and_more = link[title_query_item_start_loc  + len(title_locator):]
+        print(f'title_and_more:{title_and_more } ')
+        title_end_loc = title_and_more.find('&')
+        print(f'title_end_loc:{title_end_loc}')
+        if title_end_loc > 0:
+            title = title_and_more[:title_end_loc]
+        else:
+            title = title_and_more
+        titles.append(title)
+    return titles
