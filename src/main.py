@@ -1,13 +1,10 @@
 import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
 from constants import *
-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def parse_site_for_jd_links(url, link_finders):
-    """
-    :param url:
-    :return: links:
-    """
     page = urllib2.urlopen(url)
     soup = beautiful(page, 'html.parser')
     links = soup(link_finders[0], link_finders[1])
@@ -28,3 +25,12 @@ def filter_titles(title_dict, links, threshold):
         if total > threshold:
             result.append(link)
     return result
+
+def get_jd_bodies(urls):
+    bodies = []
+    for url in urls:
+        page = urllib2.urlopen(url)
+        soup = beautiful(page, 'html.parser')
+        body = soup('body')
+        bodies.append(str(body))
+    return bodies
