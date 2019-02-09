@@ -23,7 +23,7 @@ def parse_site_for_jd_links(url, link_finders):
     return str_links
 
 
-def build_site_url(template, title, salary, location, distance, age, jobtype = None):
+def build_site_url(template, title, salary='', location='', distance='', age='', jobtype = ''):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
