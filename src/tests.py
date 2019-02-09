@@ -63,3 +63,12 @@ def test_get_jd_bodies():
     result = get_jd_bodies(urls)
     assert isinstance(result, list)
     assert isinstance(result[0], str)
+
+def test_get_related_titles():
+    links = [
+        'http://blah.com&title=Fred+Flintstone',
+        'http://wee.com?h=foo&t=bar&title=Barny Rubbel'
+    ]
+    expected = ['Fred+Flintstone', 'Barny Rubbel']
+    result = get_related_titles(title_locator, links)
+    assert result == expected
