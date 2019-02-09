@@ -6,7 +6,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def parse_site_for_jd_links(url, link_finders):
+    def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
 
     url: type = str, a string with each url query item embeded, example 'http://indeed.com?salary=10000&jobtype=fulltime'
@@ -99,7 +99,7 @@ def get_related_titles(title_locator, links):
         titles.append(title)
     return titles
 
-def remove_stop_words_from_bodies(bodies):
+def remove_stop_words(list_of_texts):
     """ Removes English stop words from the body of job description
     use:
 
