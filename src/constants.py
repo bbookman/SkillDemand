@@ -28,7 +28,6 @@ TITLES = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100,
 '''
  https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose%2C+CA&fromage=15&limit=50&sort=&psf=advsrch
 
-'''
 INDEED_ROOT_URL = 'https://www.indeed.com/jobs?'
 INDEED_TITLE_QUERY_TERM = 'as_and'
 INDEED_JOB_TYPE_QUERY_TERM = 'jt'  #fulltime, parttime . . .
@@ -39,9 +38,5 @@ INDEED_JOB_DESCRIPTION_AGE_QUERY_TERM = 'fromage'
 INDEED_LIST_LIMIT_QUERY_TERM = 'limit'
 INDEED_ADVANCED_SERCH_INDICATOR = 'psf=advsrch'
 INDEED_URL_TEMPATE = INDEED_ROOT_URL + INDEED_TITLE_QUERY_TERM + '={}&' + INDEED_JOB_TYPE_QUERY_TERM + '={}&' + INDEED_SALARY_QUERY_TERM + '={}&' + INDEED_DISTANCE_QUERY_TERM + '={}&' + INDEED_LOCATION_QUERY_TERM + '={}&' +  INDEED_JOB_DESCRIPTION_AGE_QUERY_TERM + '={}&' + INDEED_LIST_LIMIT_QUERY_TERM + '={}&' + INDEED_ADVANCED_SERCH_INDICATOR
-
-
-
-
-
-
+'''
+INDEED_URL_TEMPATE = 'https://www.indeed.com/jobs?as_and={}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt={}&st=&as_src=&salary={}&radius={}&l={}fromage={}&limit=500&sort=&psf=advsrch'

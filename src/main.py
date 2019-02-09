@@ -4,6 +4,8 @@ from constants import *
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
+INDEED_URL_TEMPATE = 'https://www.indeed.com/jobs?as_and={}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt={}&st=&as_src=&salary={}&radius={}&l={}fromage={}&limit=500&sort=&psf=advsrch'
+
 def parse_site_for_jd_links(url, link_finders):
     page = urllib2.urlopen(url)
     soup = beautiful(page, 'html.parser')
