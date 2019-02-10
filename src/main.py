@@ -1,6 +1,5 @@
 import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
-#from .constants import *
 import ssl
 from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -113,6 +112,18 @@ def get_related_titles(title_locator, links):
             _job_title_list.append(title)
             titles.append(title)
     return titles
+
+def build_job_title(title_words, seperator):
+    """ Takes list of title words and adds site specific seperator between words
+    title_words: type = list
+    seperator: type = string
+    returns string
+    """
+    result =''
+    for word in title_words:
+        result+= word + seperator
+    return result[:-1]
+
 
 def remove_stop_words(list_of_texts):
     """ Removes English stop words from the body of job description
