@@ -1,6 +1,9 @@
 from .main import *
 from .constants import *
 
+'''
+Designed for pytest.  Probably can use unittest as well or nosetest 
+'''
 
 def test_site_root_urls_exist():
     assert INDEED_ROOT_URL
