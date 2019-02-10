@@ -1,5 +1,5 @@
 from .main import *
-from .constants import *
+#from .constants import *
 
 '''
 Designed for pytest.  Probably can use unittest as well or nosetest
@@ -60,6 +60,17 @@ def test_get_related_titles():
     title_locator = 'title='
     expected = ['Fred+Flintstone', 'Barny Rubbel']
     result = get_related_titles(title_locator, links)
+    assert result == expected
+
+def test_build_job_title():
+    title_words = [
+    'Hello',
+    'world',
+    '!'
+    ]
+    seperator = '+'
+    expected = 'Hello+world+!'
+    result = build_job_title(title_words, seperator)
     assert result == expected
 
 def test_remove_stop_words():
