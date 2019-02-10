@@ -132,3 +132,14 @@ def test_build_title_only_url():
     expected = 'http://hithere.com?TITLE&oh'
     result = build_title_only_url(template, title)
     assert result == expected
+
+def test_remove_superflous(string_list, superflous_strings):
+    string_list = [
+
+
+    ]
+    expected = [
+
+    ]
+    result = remove_superflous(string_list, superflous_strings)
+    assert result == expected
