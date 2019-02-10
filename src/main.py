@@ -1,15 +1,23 @@
 import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
-from constants import *
+#from .constants import *
 import ssl
 from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
 #GLOBALS
-SUPERFLOUS_STRINGS = ['senior', 'director', 'manager', 'lead', 'mobile', 'sr', 'jr', 'I', 'II', 'III', 'IV','V' ,'(', ')', '.', ',', '/', '\\', "\'", '\"', '-',]
-_job_title_words = []
 
-    def parse_site_for_jd_links(url, link_finders):
+_job_title_list = []
+_weight_dictionary = dict()
+_skills = []
+_title_string = ''
+_salary = ''
+_location =''
+_radius='30'
+_age = '30'
+_job_type ='fulltime'
+
+def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
 
     url: type = str, a string with each url query item embeded, example 'http://indeed.com?salary=10000&jobtype=fulltime'
@@ -26,7 +34,7 @@ _job_title_words = []
     return str_links
 
 
-def build_site_url(template, title, salary='', location='', distance='', age='', jobtype = '    '):
+def build_site_url(template, title, salary='', location='', distance='30', age='30', jobtype = 'fulltime'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
@@ -61,9 +69,10 @@ def filter_titles(title_dict, links, threshold):
         for key, value in title_dict.items():
             if key in link:
                 total += value
-        if total > threshold:
+        if total >= threshold:
             result.append(link)
     return result
+
 
 def get_jd_bodies(urls):
     """ Gets the contents of the job description page body
@@ -81,6 +90,7 @@ def get_jd_bodies(urls):
     return bodies
 
 def get_related_titles(title_locator, links):
+    global _job_title_list
     """ Allows front end to display job titles related to the one queried
 
     title_locator: type= string, unique query item in url indicating job title
@@ -99,7 +109,9 @@ def get_related_titles(title_locator, links):
             title = title_and_more[:title_end_loc]
         else:
             title = title_and_more
-        titles.append(title)
+        if title not in _job_title_list:
+            _job_title_list.append(title)
+            titles.append(title)
     return titles
 
 def remove_stop_words(list_of_texts):
@@ -145,5 +157,16 @@ def get_skill_counts(bodies, skill_list):
         which used the word java ONCE
 
     hint:  LOWERCASE the bodies, the skill list, and the results using string.lower()
+    """
+    pass
+
+def remove_superflous(string_list, superflous_strings):
+    """ Removes unnecessary strings such as "director" and "manager"
+    Because "director of software engineering" is more or less the same as "manager of software engineering"
+
+    string_list: type = list, strings to filter
+    superflous_strings: type = list, strings to remove
+
+    returns list of strings
     """
     pass

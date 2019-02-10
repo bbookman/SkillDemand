@@ -1,25 +1,9 @@
 from .main import *
 from .constants import *
 
-
-def test_site_root_urls_exist():
-    assert INDEED_ROOT_URL
-    assert isinstance(INDEED_ROOT_URL, str)
-
-def test_site_template_url():
-    assert INDEED_URL_TEMPATE
-    assert isinstance(INDEED_URL_TEMPATE, str)
-    expected = 'https://www.indeed.com/jobs?as_and=TITLE&jt=FULLTIME&salary=100000&radius=100&l=LOCATION&fromage=AGE&limit=LIMIT&psf=advsrch'
-    test_url = INDEED_URL_TEMPATE.format('TITLE', 'FULLTIME', '100000', '100', 'LOCATION', 'AGE', 'LIMIT')
-    assert expected == test_url
-
-#TODO Remove hardcoded keywords if UI happens, hence test below is invalid
-
-def test_keywords():
-    assert KEYWORDS
-    assert isinstance(KEYWORDS, list)
-    is_string = [True for keyword in KEYWORDS if isinstance(keyword, str)]
-    assert is_string
+'''
+Designed for pytest.  Probably can use unittest as well or nosetest
+'''
 
 def test_parse_site_for_jd_links():
     url = 'https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose,+CA&fromage=300&limit=50&sort=&psf=advsrch'
@@ -29,15 +13,15 @@ def test_parse_site_for_jd_links():
     assert isinstance(p[0], str)
 
 def test_build_site_url():
-    template = 'TITLE:{}, JOBTYPE:{}, SALARY:{}, LOCATION:{}, DISTANCE:{}, POST_AGE:{}'
+    template = 'TITLE:{}, SALARY:{}, LOCATION:{}, DISTANCE:{}, POST_AGE:{}, JOBTYPE:{}'
     title = 'test_title'
     jobtype = 'test_jobtype'
     salary = 'test_salary'
     location = 'test_location'
     distance = 'test_distance'
     age = 'test_age'
-    result = test_build_site_url(template, title, salary, location, distance, age, jobtype )
-    expected ='TITLE:test_title, JOBTYPE:test_jobtype, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
+    result = build_site_url(template, title, salary, location, distance, age, jobtype )
+    expected ='TITLE:test_title, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age, JOBTYPE:test_jobtype'
     assert result == expected
 
 def test_filter_titles():
@@ -45,12 +29,13 @@ def test_filter_titles():
     links = [
         'software',
         'software quality',
-        'software qualit assurance',
+        'software quality assurance',
         'http://www.blah.com?fred="sdet"'
         'automation quality'
     ]
     expected = [
-        'software qualit assurance',
+        'software quality',
+        'software quality assurance',
         'http://www.blah.com?fred="sdet"'
         'automation quality'
     ]
@@ -59,6 +44,10 @@ def test_filter_titles():
     assert result == expected
 
 def test_get_jd_bodies():
+    urls = [
+        'http://indeed.com'
+
+    ]
     result = get_jd_bodies(urls)
     assert isinstance(result, list)
     assert isinstance(result[0], str)
@@ -68,6 +57,7 @@ def test_get_related_titles():
         'http://blah.com&title=Fred+Flintstone',
         'http://wee.com?h=foo&t=bar&title=Barny Rubbel'
     ]
+    title_locator = 'title='
     expected = ['Fred+Flintstone', 'Barny Rubbel']
     result = get_related_titles(title_locator, links)
     assert result == expected
