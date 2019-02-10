@@ -72,8 +72,8 @@ def test_get_related_titles():
     result = get_related_titles(title_locator, links)
     assert result == expected
 
-def test_remove_stop_words_from_bodies():
-    bodies = [
+def test_remove_stop_words():
+    list_of_texts = [
     'this is a body of <b>text</b> and has some stop words as well as non-stop words',
     'SDET  Java Python the and of a'
     ]
@@ -83,7 +83,7 @@ def test_remove_stop_words_from_bodies():
 
     ]
 
-    result = remove_stop_words_from_bodies(bodies)
+    result = remove_stop_words(list_of_texts)
 
 def test_remove_html_from_bodies():
     bodies = [
@@ -131,4 +131,15 @@ def test_build_title_only_url():
     title = 'TITLE'
     expected = 'http://hithere.com?TITLE&oh'
     result = build_title_only_url(template, title)
+    assert result == expected
+
+def test_remove_superflous(string_list, superflous_strings):
+    string_list = [
+
+
+    ]
+    expected = [
+
+    ]
+    result = remove_superflous(string_list, superflous_strings)
     assert result == expected

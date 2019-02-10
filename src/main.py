@@ -5,8 +5,11 @@ import ssl
 from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
+#GLOBALS
+SUPERFLOUS_STRINGS = ['senior', 'director', 'manager', 'lead', 'mobile', 'sr', 'jr', 'I', 'II', 'III', 'IV','V' ,'(', ')', '.', ',', '/', '\\', "\'", '\"', '-',]
+_job_title_words = []
 
-def parse_site_for_jd_links(url, link_finders):
+    def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
 
     url: type = str, a string with each url query item embeded, example 'http://indeed.com?salary=10000&jobtype=fulltime'
@@ -99,7 +102,7 @@ def get_related_titles(title_locator, links):
         titles.append(title)
     return titles
 
-def remove_stop_words_from_bodies(bodies):
+def remove_stop_words(list_of_texts):
     """ Removes English stop words from the body of job description
     use:
 
@@ -108,7 +111,7 @@ def remove_stop_words_from_bodies(bodies):
 
     bodies: type = list of strings
 
-    returns: list of strings with stop words removed
+    returns: list of SINGLE WORD strings with stop words removed
     """
     pass
 
@@ -125,7 +128,7 @@ def remove_html_from_bodies(bodies):
         https://bytes.com/topic/python/answers/33816-easy-way-remove-html-entities-html-document
 
     bodies: type = list of strings
-    return: list of strings with as much html and javascript removed as possible
+    return: list of SINGLE WORD strings with as much html and javascript removed as possible
     """
     pass
 
