@@ -99,7 +99,8 @@ def get_related_titles(title_locator, links):
             title = title_and_more[:title_end_loc]
         else:
             title = title_and_more
-        titles.append(title)
+        if title not in _job_title_words:
+            titles.append(title)
     return titles
 
 def remove_stop_words(list_of_texts):
