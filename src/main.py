@@ -6,7 +6,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
 #GLOBALS
-SUPERFLOUS_STRINGS = ['senior', 'director', 'manager', 'lead', 'mobile', 'sr', 'jr', 'I', 'II', 'III', 'IV','V' ,'(', ')', '.', ',', '/', '\\', "\'", '\"', '-',]
+
 _job_title_words = []
 
     def parse_site_for_jd_links(url, link_finders):
@@ -145,5 +145,16 @@ def get_skill_counts(bodies, skill_list):
         which used the word java ONCE
 
     hint:  LOWERCASE the bodies, the skill list, and the results using string.lower()
+    """
+    pass
+
+def remove_superflous(string_list, superflous_strings):
+    """ Removes unnecessary strings such as "director" and "manager"
+    Because "director of software engineering" is more or less the same as "manager of software engineering"
+
+    string_list: type = list, strings to filter
+    superflous_strings: type = list, strings to remove
+
+    returns list of strings
     """
     pass
