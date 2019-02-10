@@ -8,6 +8,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 #GLOBALS
 
 _job_title_words = []
+_weight_dictionary = dict()
 
     def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
@@ -61,7 +62,7 @@ def filter_titles(title_dict, links, threshold):
         for key, value in title_dict.items():
             if key in link:
                 total += value
-        if total > threshold:
+        if total >= threshold:
             result.append(link)
     return result
 
