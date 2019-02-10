@@ -1,6 +1,6 @@
 import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
-from constants import *
+#from .constants import *
 import ssl
 from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -73,6 +73,7 @@ def filter_titles(title_dict, links, threshold):
             result.append(link)
     return result
 
+
 def get_jd_bodies(urls):
     """ Gets the contents of the job description page body
 
@@ -89,6 +90,7 @@ def get_jd_bodies(urls):
     return bodies
 
 def get_related_titles(title_locator, links):
+    global _job_title_list
     """ Allows front end to display job titles related to the one queried
 
     title_locator: type= string, unique query item in url indicating job title
@@ -107,7 +109,8 @@ def get_related_titles(title_locator, links):
             title = title_and_more[:title_end_loc]
         else:
             title = title_and_more
-        if title not in _job_title_words:
+        if title not in _job_title_list:
+            _job_title_list.append(title)
             titles.append(title)
     return titles
 
