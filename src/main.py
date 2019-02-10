@@ -7,10 +7,17 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 #GLOBALS
 
-_job_title_words = []
+_job_title_list = []
 _weight_dictionary = dict()
+_skills = []
+_title_string = ''
+_salary = ''
+_location =''
+_radius='30'
+_age = '30'
+_job_type ='fulltime'
 
-    def parse_site_for_jd_links(url, link_finders):
+def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
 
     url: type = str, a string with each url query item embeded, example 'http://indeed.com?salary=10000&jobtype=fulltime'
@@ -27,7 +34,7 @@ _weight_dictionary = dict()
     return str_links
 
 
-def build_site_url(template, title, salary='', location='', distance='', age='', jobtype = '    '):
+def build_site_url(template, title, salary='', location='', distance='30', age='30', jobtype = 'fulltime'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
