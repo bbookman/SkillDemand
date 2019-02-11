@@ -20,7 +20,6 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(chrome_options=chrome_options)
-#driver = webdriver.Chrome()
 
 
 def parse_site_for_jd_links(url, xpath):
