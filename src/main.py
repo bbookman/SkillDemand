@@ -40,7 +40,7 @@ def build_site_url(template, title, salary='', location='', distance='30', age='
     title: type = str, job title using escape characters that are site dependent.  example: 'software+quality+engineer'
     jobtype: type = str, example: fulltime, partime, contract
     salary: type = str, example: '100000'
-    location: type = str, using escape charactersthat are site dependent.  example: 'San+Jose,+CA'
+    location: type = str, ZIP CODE
     distance: type = str, represents the radius of the job search. example: '50'  (miles)
     age: type = str, the number of days the job description has been posted.  example: '30' (days)
 

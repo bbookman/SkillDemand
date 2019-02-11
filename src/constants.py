@@ -10,12 +10,13 @@ SITES_DICT = {
         'title_word_sep': '+',
     },
 # https://www.monster.com/jobs/search/Full-Time_8?q=technical-support-engineer&intcid=skr_navigation_nhpso_searchMain&rad=30&where=Santa-Clara__2c-CA&tm=30
+
     monster: {
         'url_template' : '# https://www.monster.com/jobs/search/Full-Time_8?q={}&rad={}&where={}&tm={}' #tm is age
         'title_only_tempate': 'https://www.monster.com/jobs/search/?q={}',
         'jd_link_finders' : #NOT APPLICABLE WITHOUT FIX ISSUE #20
-        'title_finder' : 'q='
-        'title_word_sep': '-'
+        'title_finder' : 'q=',
+        'title_word_sep': '-',
     },
 
     '''
