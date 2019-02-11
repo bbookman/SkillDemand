@@ -3,7 +3,7 @@ SUPERFLOUS_STRINGS = ['senior', 'director', 'manager', 'lead', 'mobile', 'sr', '
 SITES_DICT = {
 
     indeed: {
-        'url_template' : 'https://www.indeed.com/jobs?as_and={}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt={}&st=&as_src=&salary={}&radius={}&l={}fromage={}&limit=500&sort=&psf=advsrch',
+        'url_template' : 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}fromage={age}&limit=500&sort=&psf=advsrch',
         'title_only_tempate': 'https://www.indeed.com/q-{}.html',
         'jd_link_finders' : ['a', "jobtitle turnstileLink"],
         'title_finder' : 'as_and=',

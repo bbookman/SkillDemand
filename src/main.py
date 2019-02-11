@@ -32,20 +32,21 @@ def parse_site_for_jd_links(url, link_finders):
     return str_links
 
 
-def build_site_url(template, title, salary='', location='', distance='30', age='30', jobtype = 'fulltime'):
+def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
     title: type = str, job title using escape characters that are site dependent.  example: 'software+quality+engineer'
-    jobtype: type = str, example: fulltime, partime, contract
     salary: type = str, example: '100000'
-    location: type = str, ZIP CODE
-    distance: type = str, represents the radius of the job search. example: '50'  (miles)
+    zipcode: type = str, ZIP CODE
+    radius: type = str, represents the radius of the job search. example: '50'  (miles)
     age: type = str, the number of days the job description has been posted.  example: '30' (days)
 
     returns an url string
     """
-    return template.format(title, salary, location, distance, age, jobtype)
+
+    return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
+
 
 def build_title_only_url(template, title):
     return template.format(title)
