@@ -54,12 +54,13 @@ def test_get_jd_bodies():
 
 def test_get_related_titles():
     links = [
-        'http://blah.com&title=Fred+Flintstone',
-        'http://wee.com?h=foo&t=bar&title=Barny Rubbel'
+        'http://blah.com&title=Fred+Flintstone</a>',
+        'http://wee.com?h=foo&t=bar&title=Barny Rubbel</a>'
     ]
-    title_locator = 'title='
+    title_start= 'title='
+    title_end = '</a>'
     expected = ['Fred+Flintstone', 'Barny Rubbel']
-    result = get_related_titles(title_locator, links)
+    result = get_related_titles(title_start, title_end, links)
     assert result == expected
 
 def test_build_job_title():

@@ -88,7 +88,7 @@ def get_jd_bodies(urls):
         bodies.append(str(body))
     return bodies
 
-def get_related_titles(title_locator, links):
+def get_related_titles(title_start, title_end, links):
     global _job_title_list
     """ Allows front end to display job titles related to the one queried
 
@@ -99,11 +99,9 @@ def get_related_titles(title_locator, links):
     """
     titles = []
     for link in links:
-        title_query_item_start_loc = link.find(title_locator)
-        title_and_more = link[title_query_item_start_loc  + len(title_locator):]
-        print(f'title_and_more:{title_and_more } ')
-        title_end_loc = title_and_more.find('&')
-        print(f'title_end_loc:{title_end_loc}')
+        title_query_item_start_loc = link.find(title_start)
+        title_and_more = link[title_query_item_start_loc  + len(title_start):]
+        title_end_loc = title_and_more.find(title_end)
         if title_end_loc > 0:
             title = title_and_more[:title_end_loc]
         else:
