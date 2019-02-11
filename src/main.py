@@ -1,7 +1,7 @@
 import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
 import ssl
-from nltk.tokenize import sent_tokenize, word_tokenize
+#from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
 #GLOBALS
@@ -14,7 +14,6 @@ _salary = ''
 _location =''
 _radius='30'
 _age = '30'
-_job_type ='fulltime'
 
 def parse_site_for_jd_links(url, link_finders):
     """Get links for each job description
