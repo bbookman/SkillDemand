@@ -13,13 +13,13 @@ def test_parse_site_for_jd_links():
     assert isinstance(p[0], str)
 
 def test_build_site_url():
-    template = 'TITLE:{}, SALARY:{}, LOCATION:{}, DISTANCE:{}, POST_AGE:{}'
+    template = 'TITLE:{title}, SALARY:{salary}, LOCATION:{zipcode}, DISTANCE:{radius}, POST_AGE:{age}'
     title = 'test_title'
     salary = 'test_salary'
-    location = 'test_location'
-    distance = 'test_distance'
+    zipcode = 'test_location'
+    radius = 'test_distance'
     age = 'test_age'
-    result = build_site_url(template, title, salary, location, distance, age,)
+    result = build_site_url(template, title, salary, zipcode, radius, age)
     expected ='TITLE:test_title, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
     assert result == expected
 
