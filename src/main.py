@@ -34,7 +34,7 @@ chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(options=chrome_options)
 
 
-def parse_site_for_jd_links(url, xpath_template):
+def get_jd_links(url, xpath_template):
     """
     :param url: string , website url
     :param xpath:  string, xpath
