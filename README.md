@@ -18,6 +18,6 @@
 * Reviewed frond end flow doc
 * Agreed on roles and responsibilities (see team above)
 * Scope changes:
-  * Allow user to choose from a short dropdown list of possible job titles (titled TBD)
+  * Allow user to choose from a short dropdown list of possible job titles (titles TBD)
   * Output should include data from various geos (geos TBD)
   * Output should include data from various salary ranges (ranges TBD)
