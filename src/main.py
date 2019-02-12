@@ -5,8 +5,8 @@ from selenium.common.exceptions import NoSuchElementException, ElementClickInter
 from selenium.common.exceptions import InvalidSessionIdException
 from selenium.common.exceptions import TimeoutException, InvalidArgumentException
 #from nltk.tokenize import sent_tokenize, word_tokenize
-ssl._create_default_https_context = ssl._create_unverified_context
 import logging
+from constants import *
 
 def make_date_string():
     stamp = datetime.now()
@@ -14,6 +14,7 @@ def make_date_string():
     return date_string
 
 logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
+ssl._create_default_https_context = ssl._create_unverified_context
 
 #GLOBALS
 
@@ -27,10 +28,11 @@ _radius='30'
 _age = '30'
 
 
-
+#driver.set_window_size(1440, 900)
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument('window-size=1920x1080')
 driver = webdriver.Chrome(options=chrome_options)
 
 
@@ -92,7 +94,9 @@ def filter_titles(title_dict, links, threshold):
     for link in links:
         total = 0
         for key, value in title_dict.items():
-            if key in link:
+            title = link.text
+            in_title = key in title
+            if key.lower() in title.lower():
                 total += value
         if total >= threshold:
             result.append(link)
@@ -101,8 +105,8 @@ def filter_titles(title_dict, links, threshold):
 def get_bodies(urls):
     bodies = []
     for url in urls:
-        driver.click(url)
-        body = driver.find_element_by_tag('body').text
+        url.click()
+        body = driver.find_element_by_tag_name('body').text
         bodies.append(body)
     return bodies
 
@@ -175,3 +179,19 @@ def remove_superflous(string_list, superflous_strings):
     returns list of strings
     """
     pass
+
+#TODO: Remove below prior to production
+
+def test_flow():
+    template = SITES_DICT['indeed']['url_template']
+    url = build_site_url(template, 'software quality assurance engineer', '120000', '95032')
+    print(f'url: {url}')
+    xpath_template = SITES_DICT['indeed']['xpath_template']
+    links = get_jd_links(url, xpath_template)
+    print('links[0]: ', links[0])
+    title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
+                  'automation': 70, 'engineer': 20}
+    filtered_links = filter_titles(title_dict, links, 90)
+    print('filtered_links[0]: ',filtered_links[0])
+    bodies = get_bodies(filtered_links)
+    print(bodies[0])
