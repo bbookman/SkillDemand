@@ -49,19 +49,12 @@ def parse_site_for_jd_links(url, xpath_template):
     return links
 
 
-def get_title_body_dict(urls, title_xpath):  #/html/body/div[1]/div[3]/div[3]/div/div/div[1]/div[1]/div[1]/h3
+def get_tiles(links):
     """
-    :param urls: list of url strings
-    :return: dictionary, title: body
+    :param links: list of selenium web objects contining the job title url
+    :return: list of multi-word titles
     """
-    title_body_dict = dict()
-    for url in urls:
-        url.click()
-        body = driver.find_element_by_tag_name('body').text
-        title = driver.find_element_by_tag_name(title_xpath).text
-        title_body_dict[title] = body #assumes EVERY title is unique
-
-    return title_body_dict
+    return [link.text for link in links]
 
 
 def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
