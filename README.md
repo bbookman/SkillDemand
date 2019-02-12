@@ -22,3 +22,6 @@
   * Output should include data from various geos (geos TBD)
   * Output should include data from various salary ranges (ranges TBD)
 * Action Items: See [Trello](https://trello.com/whitesnakes)
+
+## Schedule
+Bruce will be out week of Feb 18th
