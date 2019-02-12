@@ -98,17 +98,24 @@ def filter_titles(title_dict, links, threshold):
             result.append(link)
     return result
 
+def get_bodies(urls):
+    bodies = []
+    for url in urls:
+        driver.click(url)
+        body = driver.find_element_by_tag('body').text
+        bodies.append(body)
+    return bodies
 
 
-def build_job_title(title_words, seperator):
-    """ Takes list of title words and adds site specific seperator between words
+def build_job_title(title_words, separator):
+    """ Takes list of title words and adds site specific separator between words
     title_words: type = list
-    seperator: type = string
+    separator: type = string
     returns string
     """
     result =''
     for word in title_words:
-        result+= word + seperator
+        result+= word + separator
     return result[:-1]
 
 
