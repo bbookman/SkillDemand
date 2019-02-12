@@ -1,6 +1,7 @@
 import urllib.request as urllib2
 from bs4 import BeautifulSoup as beautiful
 import ssl
+from selenium import webdriver
 #from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -15,21 +16,34 @@ _location =''
 _radius='30'
 _age = '30'
 
-def parse_site_for_jd_links(url, link_finders):
-    """Get links for each job description
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--disable-gpu')
+driver = webdriver.Chrome(options=chrome_options)
 
-    url: type = str, a string with each url query item embeded, example 'http://indeed.com?salary=10000&jobtype=fulltime'
-    link_finders: type = list, first item will almost always be 'a' for an anchor tag, second item would be a unique quality
-                  identifying the urls that are for job descriptions
-                  example: ['a', 'some_unique_string_identifying_job_description_urls']
 
-    returns a list of urls as strings
+def parse_site_for_jd_links(url, xpath):
     """
-    page = urllib2.urlopen(url)
-    soup = beautiful(page, 'html.parser')
-    links = soup(link_finders[0], link_finders[1])
-    str_links = [str(link) for link in links]
-    return str_links
+    :param url: string , website url
+    :param xpath:  string, xpath
+    :return: list of selenium webdriver objects
+    """
+    driver.get(url)
+    links = driver.find_elements_by_xpath(xpath)
+    return links
+
+
+def get_jd_bodies(urls):
+    """
+    :param urls: list of url strings
+    :return: bodies, strings of web page body text
+    """
+    bodies =[]
+    for url in urls:
+        url.click()
+        body = driver.find_element_by_tag_name('body').text
+        bodies.append(body)
+    return bodies
 
 
 def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
@@ -73,20 +87,8 @@ def filter_titles(title_dict, links, threshold):
     return result
 
 
-def get_jd_bodies(urls):
-    """ Gets the contents of the job description page body
 
-    urls: type = list, a list of urls for which to obtain the body text
 
-    returns a list of body text contents for each url
-    """
-    bodies = []
-    for url in urls:
-        page = urllib2.urlopen(url)
-        soup = beautiful(page, 'html.parser')
-        body = soup('body')
-        bodies.append(str(body))
-    return bodies
 
 def get_related_titles(title_start, title_end, links):
     global _job_title_list
