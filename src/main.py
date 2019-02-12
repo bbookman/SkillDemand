@@ -1,9 +1,19 @@
-import urllib.request as urllib2
-from bs4 import BeautifulSoup as beautiful
+from datetime import datetime
 import ssl
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import InvalidSessionIdException
+from selenium.common.exceptions import TimeoutException, InvalidArgumentException
 #from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
+import logging
+
+def make_date_string():
+    stamp = datetime.now()
+    date_string = stamp.strftime('%Y-%d-%m-%H-%M-%S')
+    return date_string
+
+logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
 
 #GLOBALS
 
@@ -22,14 +32,19 @@ chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(options=chrome_options)
 
 
-def parse_site_for_jd_links(url, xpath):
+def parse_site_for_jd_links(url, xpath_template):
     """
     :param url: string , website url
     :param xpath:  string, xpath
     :return: list of selenium webdriver objects
     """
+    links = []
     driver.get(url)
-    links = driver.find_elements_by_xpath(xpath)
+    for i in range(1,500):
+        try:
+            links.append(driver.find_element_by_xpath(xpath_template.format(i)))
+        except NoSuchElementException:
+            continue
     return links
 
 
