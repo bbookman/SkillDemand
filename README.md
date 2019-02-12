@@ -21,3 +21,4 @@
   * Allow user to choose from a short dropdown list of possible job titles (titles TBD)
   * Output should include data from various geos (geos TBD)
   * Output should include data from various salary ranges (ranges TBD)
+* Action Items: See [Trello](https://trello.com/whitesnakes)
