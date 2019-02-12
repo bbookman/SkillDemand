@@ -6,6 +6,7 @@ SITES_DICT = {
         'url_template' : 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}fromage={age}&limit=500&sort=&psf=advsrch',
         'title_only_tempate': 'https://www.indeed.com/q-{}.html',
         'xpath_template' : '//*[@id="sja{}"]',
+        'title_xpath': '/html/body/div[1]/div[3]/div[3]/div/div/div[1]/div[1]/div[1]/h3'
         'title_finder' : 'as_and=',
         'title_word_sep': '+',
     },
