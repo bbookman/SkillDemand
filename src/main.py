@@ -26,6 +26,7 @@ _location =''
 _radius='30'
 _age = '30'
 
+
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
@@ -48,17 +49,19 @@ def parse_site_for_jd_links(url, xpath_template):
     return links
 
 
-def get_jd_bodies(urls):
+def get_title_body_dict(urls, title_xpath):  #/html/body/div[1]/div[3]/div[3]/div/div/div[1]/div[1]/div[1]/h3
     """
     :param urls: list of url strings
-    :return: bodies, strings of web page body text
+    :return: dictionary, title: body
     """
-    bodies =[]
+    title_body_dict = dict()
     for url in urls:
         url.click()
         body = driver.find_element_by_tag_name('body').text
-        bodies.append(body)
-    return bodies
+        title = driver.find_element_by_tag_name(title_xpath).text
+        title_body_dict[title] = body #assumes EVERY title is unique
+
+    return title_body_dict
 
 
 def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
@@ -102,31 +105,6 @@ def filter_titles(title_dict, links, threshold):
     return result
 
 
-
-
-
-def get_related_titles(title_start, title_end, links):
-    global _job_title_list
-    """ Allows front end to display job titles related to the one queried
-
-    title_locator: type= string, unique query item in url indicating job title
-    links: type = list, list of job description links
-
-    returns list containing strings of job titles
-    """
-    titles = []
-    for link in links:
-        title_query_item_start_loc = link.find(title_start)
-        title_and_more = link[title_query_item_start_loc  + len(title_start):]
-        title_end_loc = title_and_more.find(title_end)
-        if title_end_loc > 0:
-            title = title_and_more[:title_end_loc]
-        else:
-            title = title_and_more
-        if title not in _job_title_list:
-            _job_title_list.append(title)
-            titles.append(title)
-    return titles
 
 def build_job_title(title_words, seperator):
     """ Takes list of title words and adds site specific seperator between words
