@@ -22,9 +22,10 @@ _weight_dictionary = dict()
 _skills = []
 _title_string = ''
 _salary = ''
-_location =''
+_zipcode =''
 _radius='30'
 _age = '30'
+
 
 
 chrome_options = webdriver.ChromeOptions()
