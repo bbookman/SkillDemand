@@ -1,5 +1,5 @@
 from .main import *
-#from .constants import *
+from selenium import webdriver
 
 '''
 Designed for pytest.  Probably can use unittest as well or nosetest
@@ -7,21 +7,20 @@ Designed for pytest.  Probably can use unittest as well or nosetest
 
 def test_parse_site_for_jd_links():
     url = 'https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose,+CA&fromage=300&limit=50&sort=&psf=advsrch'
-    link_finders = ['a', "jobtitle turnstileLink"]
-    p = parse_site_for_jd_links(url, link_finders)
+    xpath_template = '//*[@id="sja{}"]'
+    p = parse_site_for_jd_links(url, xpath_template)
     assert isinstance(p, list)
-    assert isinstance(p[0], str)
+
 
 def test_build_site_url():
-    template = 'TITLE:{}, SALARY:{}, LOCATION:{}, DISTANCE:{}, POST_AGE:{}, JOBTYPE:{}'
+    template = 'TITLE:{title}, SALARY:{salary}, LOCATION:{zipcode}, DISTANCE:{radius}, POST_AGE:{age}'
     title = 'test_title'
-    jobtype = 'test_jobtype'
     salary = 'test_salary'
-    location = 'test_location'
-    distance = 'test_distance'
+    zipcode = 'test_location'
+    radius = 'test_distance'
     age = 'test_age'
-    result = build_site_url(template, title, salary, location, distance, age, jobtype )
-    expected ='TITLE:test_title, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age, JOBTYPE:test_jobtype'
+    result = build_site_url(template, title, salary, zipcode, radius, age)
+    expected ='TITLE:test_title, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
     assert result == expected
 
 def test_filter_titles():
@@ -43,23 +42,16 @@ def test_filter_titles():
     result = filter_titles(title_dict, links, threshold)
     assert result == expected
 
-def test_get_jd_bodies():
-    urls = [
-        'http://indeed.com'
-
-    ]
-    result = get_jd_bodies(urls)
-    assert isinstance(result, list)
-    assert isinstance(result[0], str)
 
 def test_get_related_titles():
     links = [
-        'http://blah.com&title=Fred+Flintstone',
-        'http://wee.com?h=foo&t=bar&title=Barny Rubbel'
+        'http://blah.com&title=Fred+Flintstone</a>',
+        'http://wee.com?h=foo&t=bar&title=Barny Rubbel</a>'
     ]
-    title_locator = 'title='
+    title_start= 'title='
+    title_end = '</a>'
     expected = ['Fred+Flintstone', 'Barny Rubbel']
-    result = get_related_titles(title_locator, links)
+    result = get_related_titles(title_start, title_end, links)
     assert result == expected
 
 def test_build_job_title():

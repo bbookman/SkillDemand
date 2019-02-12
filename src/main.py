@@ -1,8 +1,19 @@
-import urllib.request as urllib2
-from bs4 import BeautifulSoup as beautiful
+from datetime import datetime
 import ssl
-from nltk.tokenize import sent_tokenize, word_tokenize
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import InvalidSessionIdException
+from selenium.common.exceptions import TimeoutException, InvalidArgumentException
+#from nltk.tokenize import sent_tokenize, word_tokenize
 ssl._create_default_https_context = ssl._create_unverified_context
+import logging
+
+def make_date_string():
+    stamp = datetime.now()
+    date_string = stamp.strftime('%Y-%d-%m-%H-%M-%S')
+    return date_string
+
+logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
 
 #GLOBALS
 
@@ -14,39 +25,57 @@ _salary = ''
 _location =''
 _radius='30'
 _age = '30'
-_job_type ='fulltime'
 
-def parse_site_for_jd_links(url, link_finders):
-    """Get links for each job description
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--disable-gpu')
+driver = webdriver.Chrome(options=chrome_options)
 
-    url: type = str, a string with each url query item embeded, example 'http://indeed.com?salary=10000&jobtype=fulltime'
-    link_finders: type = list, first item will almost always be 'a' for an anchor tag, second item would be a unique quality
-                  identifying the urls that are for job descriptions
-                  example: ['a', 'some_unique_string_identifying_job_description_urls']
 
-    returns a list of urls as strings
+def parse_site_for_jd_links(url, xpath_template):
     """
-    page = urllib2.urlopen(url)
-    soup = beautiful(page, 'html.parser')
-    links = soup(link_finders[0], link_finders[1])
-    str_links = [str(link) for link in links]
-    return str_links
+    :param url: string , website url
+    :param xpath:  string, xpath
+    :return: list of selenium webdriver objects
+    """
+    links = []
+    driver.get(url)
+    for i in range(1,500):
+        try:
+            links.append(driver.find_element_by_xpath(xpath_template.format(i)))
+        except NoSuchElementException:
+            continue
+    return links
 
 
-def build_site_url(template, title, salary='', location='', distance='30', age='30', jobtype = 'fulltime'):
+def get_jd_bodies(urls):
+    """
+    :param urls: list of url strings
+    :return: bodies, strings of web page body text
+    """
+    bodies =[]
+    for url in urls:
+        url.click()
+        body = driver.find_element_by_tag_name('body').text
+        bodies.append(body)
+    return bodies
+
+
+def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
     title: type = str, job title using escape characters that are site dependent.  example: 'software+quality+engineer'
-    jobtype: type = str, example: fulltime, partime, contract
     salary: type = str, example: '100000'
-    location: type = str, using escape charactersthat are site dependent.  example: 'San+Jose,+CA'
-    distance: type = str, represents the radius of the job search. example: '50'  (miles)
+    zipcode: type = str, ZIP CODE
+    radius: type = str, represents the radius of the job search. example: '50'  (miles)
     age: type = str, the number of days the job description has been posted.  example: '30' (days)
 
     returns an url string
     """
-    return template.format(title, salary, location, distance, age, jobtype)
+
+    return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
+
 
 def build_title_only_url(template, title):
     return template.format(title)
@@ -73,22 +102,10 @@ def filter_titles(title_dict, links, threshold):
     return result
 
 
-def get_jd_bodies(urls):
-    """ Gets the contents of the job description page body
 
-    urls: type = list, a list of urls for which to obtain the body text
 
-    returns a list of body text contents for each url
-    """
-    bodies = []
-    for url in urls:
-        page = urllib2.urlopen(url)
-        soup = beautiful(page, 'html.parser')
-        body = soup('body')
-        bodies.append(str(body))
-    return bodies
 
-def get_related_titles(title_locator, links):
+def get_related_titles(title_start, title_end, links):
     global _job_title_list
     """ Allows front end to display job titles related to the one queried
 
@@ -99,11 +116,9 @@ def get_related_titles(title_locator, links):
     """
     titles = []
     for link in links:
-        title_query_item_start_loc = link.find(title_locator)
-        title_and_more = link[title_query_item_start_loc  + len(title_locator):]
-        print(f'title_and_more:{title_and_more } ')
-        title_end_loc = title_and_more.find('&')
-        print(f'title_end_loc:{title_end_loc}')
+        title_query_item_start_loc = link.find(title_start)
+        title_and_more = link[title_query_item_start_loc  + len(title_start):]
+        title_end_loc = title_and_more.find(title_end)
         if title_end_loc > 0:
             title = title_and_more[:title_end_loc]
         else:
