@@ -60,9 +60,9 @@ def test_build_job_title():
     'world',
     '!'
     ]
-    seperator = '+'
+    separator = '+'
     expected = 'Hello+world+!'
-    result = build_job_title(title_words, seperator)
+    result = build_job_title(title_words, separator)
     assert result == expected
 
 def test_remove_stop_words():
