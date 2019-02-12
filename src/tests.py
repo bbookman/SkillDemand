@@ -5,10 +5,10 @@ from selenium import webdriver
 Designed for pytest.  Probably can use unittest as well or nosetest
 '''
 
-def test_parse_site_for_jd_links():
+def test_get_jd_links():
     url = 'https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose,+CA&fromage=300&limit=50&sort=&psf=advsrch'
     xpath_template = '//*[@id="sja{}"]'
-    p = parse_site_for_jd_links(url, xpath_template)
+    p = get_jd_links(url, xpath_template)
     assert isinstance(p, list)
 
 

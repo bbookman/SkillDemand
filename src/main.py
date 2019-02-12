@@ -22,9 +22,11 @@ _weight_dictionary = dict()
 _skills = []
 _title_string = ''
 _salary = ''
-_location =''
+_zipcode =''
 _radius='30'
 _age = '30'
+
+
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
@@ -32,7 +34,7 @@ chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(options=chrome_options)
 
 
-def parse_site_for_jd_links(url, xpath_template):
+def get_jd_links(url, xpath_template):
     """
     :param url: string , website url
     :param xpath:  string, xpath
@@ -48,17 +50,12 @@ def parse_site_for_jd_links(url, xpath_template):
     return links
 
 
-def get_jd_bodies(urls):
+def get_tiles(links):
     """
-    :param urls: list of url strings
-    :return: bodies, strings of web page body text
+    :param links: list of selenium web objects contining the job title url
+    :return: list of multi-word titles
     """
-    bodies =[]
-    for url in urls:
-        url.click()
-        body = driver.find_element_by_tag_name('body').text
-        bodies.append(body)
-    return bodies
+    return [link.text for link in links]
 
 
 def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
@@ -102,31 +99,6 @@ def filter_titles(title_dict, links, threshold):
     return result
 
 
-
-
-
-def get_related_titles(title_start, title_end, links):
-    global _job_title_list
-    """ Allows front end to display job titles related to the one queried
-
-    title_locator: type= string, unique query item in url indicating job title
-    links: type = list, list of job description links
-
-    returns list containing strings of job titles
-    """
-    titles = []
-    for link in links:
-        title_query_item_start_loc = link.find(title_start)
-        title_and_more = link[title_query_item_start_loc  + len(title_start):]
-        title_end_loc = title_and_more.find(title_end)
-        if title_end_loc > 0:
-            title = title_and_more[:title_end_loc]
-        else:
-            title = title_and_more
-        if title not in _job_title_list:
-            _job_title_list.append(title)
-            titles.append(title)
-    return titles
 
 def build_job_title(title_words, seperator):
     """ Takes list of title words and adds site specific seperator between words
