@@ -9,16 +9,7 @@ def test_parse_site_for_jd_links():
     url = 'https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose,+CA&fromage=300&limit=50&sort=&psf=advsrch'
     xpath_root = '//*[@id="sja2"]'
     p = parse_site_for_jd_links(url, xpath_root)
-    assert isinstance(p, webdriver)
-
-def test_get_jd_bodies():
-    urls = [
-        'http://indeed.com'
-
-    ]
-    result = get_jd_bodies(urls)
-    assert isinstance(result, list)
-    assert isinstance(result[0], str)
+    assert isinstance(p, list)
 
 
 def test_build_site_url():
