@@ -12,8 +12,8 @@ SITES_DICT = {
     'monster':{
         'url_template' : 'https://www.monster.com/jobs/search/?q={title}&rad={radius}%where={zipcode}&tm={age}',
         'title_only_tempate': 'https://www.monster.com/jobs/search/?q={title}',
-        'xpath_template': '//section[2]/div/div[2]/header/h2/a',   #//span[@id='TrackingJobBody']
+        'xpath_template': '//section[2]/div/div[2]/header/h2/a',
         'title_word_sep': '-',
-        'body_selector': "//span[@id='TrackingJobBody']"
+        'body_selector': 'body'
     },
 }

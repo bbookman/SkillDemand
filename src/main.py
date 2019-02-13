@@ -1,9 +1,9 @@
 from datetime import datetime
 import ssl
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
-from selenium.common.exceptions import InvalidSessionIdException
-from selenium.common.exceptions import TimeoutException, InvalidArgumentException
+from selenium.common.exceptions import NoSuchElementException
+
+from selenium.common.exceptions import StaleElementReferenceException
 #from nltk.tokenize import sent_tokenize, word_tokenize
 import logging
 from constants import *
@@ -28,7 +28,6 @@ _radius='30'
 _age = '30'
 
 
-#driver.set_window_size(1440, 900)
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
@@ -106,16 +105,23 @@ def filter_titles(title_dict, links, threshold):
             result.append(link)
     return result
 
-def get_bodies(site_id, urls, selector='body'):
+def get_bodies(site_id, urls):
     bodies = []
     for url in urls:
         if site_id =='monster':
-            href = url.get_attribute("href")
-            driver.open(href)
-            #### HERE GET THE BODY IN THE NEW WINDOW
+            try:
+                href = url.get_attribute('href')
+                driver.get(href)
+            except StaleElementReferenceException:
+                url_str = str(url)
+                logging.info(f'StaleElementReferenceException: {url_str}')
+                print('StaleElementReferenceException')
+                continue
+
+            body = driver.find_element_by_tag_name('body').text
         if site_id == 'indeed':
             url.click()
-            body = driver.find_element_by_tag_name(selector).text
+            body = driver.find_element_by_tag_name('body').text
         bodies.append(body)
     return bodies
 
@@ -190,6 +196,8 @@ def remove_superflous(string_list, superflous_strings):
     """
     pass
 
+
+
 #TODO: Remove below prior to production
 
 def test_flow():
@@ -206,9 +214,8 @@ def test_flow():
     filtered_links = filter_titles(title_dict, links, 90)
     if filtered_links:
         logging.info('Got filtered links')
-    selector = SITES_DICT['monster']['body_selector']
-    bodies = get_bodies('monster', filtered_links, selector )
+    href = filtered_links[0].get_attribute("href")
+    bodies = get_bodies('monster', filtered_links)
     if bodies:
-        logging.info('Got bodies')
-        print(bodies[0])
+        logging.info('Got bodies. Total: ', len(bodies) )
 test_flow()
