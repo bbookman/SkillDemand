@@ -28,12 +28,16 @@ _radius='30'
 _age = '30'
 
 
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-gpu')
-chrome_options.add_argument('window-size=1920x1080')
-driver = webdriver.Chrome(options=chrome_options)
+def start_driver():
 
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('window-size=1920x1080')
+    driver = webdriver.Chrome(options=chrome_options)
+    return driver
+
+_driver = start_driver()
 
 def get_jd_links(url, xpath_template):
     """
@@ -42,10 +46,10 @@ def get_jd_links(url, xpath_template):
     :return: list of selenium webdriver objects
     """
     links = []
-    driver.get(url)
+    _driver.get(url)
     for i in range(1,500):
         try:
-            links.append(driver.find_element_by_xpath(xpath_template.format(i)))
+            links.append(_driver.find_element_by_xpath(xpath_template.format(i)))
         except NoSuchElementException:
             element = xpath_template.format(i)
             logging.info(f'NoSuchElementException: {element}')
@@ -111,17 +115,17 @@ def get_bodies(site_id, urls):
         if site_id =='monster':
             try:
                 href = url.get_attribute('href')
-                driver.get(href)
+                _driver.get(href)
             except StaleElementReferenceException:
                 url_str = str(url)
                 logging.info(f'StaleElementReferenceException: {url_str}')
                 print('StaleElementReferenceException')
                 continue
 
-            body = driver.find_element_by_tag_name('body').text
+            body = _driver.find_element_by_tag_name('body').text
         if site_id == 'indeed':
             url.click()
-            body = driver.find_element_by_tag_name('body').text
+            body = _driver.find_element_by_tag_name('body').text
         bodies.append(body)
     return bodies
 
@@ -200,12 +204,13 @@ def remove_superflous(string_list, superflous_strings):
 
 #TODO: Remove below prior to production
 
-def test_flow():
-    template = SITES_DICT['monster']['url_template']
-    sep = SITES_DICT['monster']['title_word_sep']
+def test__flow(site_id):
+    logging.info(f'TEST: {site_id}')
+    template = SITES_DICT[site_id]['url_template']
+    sep = SITES_DICT[site_id]['title_word_sep']
     title = build_job_title(['software', 'quality', 'assurance', 'engineer'], sep)
-    url = build_site_url(template, title , '120000', '95032')
-    xpath_template = SITES_DICT['monster']['xpath_template']
+    url = build_site_url(template, title , '120000', '95032', '60', '60')
+    xpath_template = SITES_DICT[site_id ]['xpath_template']
     logging.info('Getting links')
     links = get_jd_links(url, xpath_template)
     title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
@@ -214,8 +219,8 @@ def test_flow():
     filtered_links = filter_titles(title_dict, links, 90)
     if filtered_links:
         logging.info('Got filtered links')
-    href = filtered_links[0].get_attribute("href")
     bodies = get_bodies('monster', filtered_links)
     if bodies:
-        logging.info('Got bodies. Total: ', len(bodies) )
-test_flow()
+        logging.info('Got bodies. Total: ' +  str(len(bodies)))
+
+test__flow('indeed')
