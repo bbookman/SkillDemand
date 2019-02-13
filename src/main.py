@@ -99,9 +99,13 @@ def filter_titles(title_dict, links, threshold):
     for link in links:
         total = 0
         for key, value in title_dict.items():
-            title = link.text
-            in_title = key in title
-            logging.debug(f'title: {title}, key: {key}, in_title?: {in_title}')
+            try:
+                title = link.text
+                in_title = key in title
+                logging.debug(f'title: {title}, key: {key}, in_title?: {in_title}')
+            except StaleElementReferenceException:
+                logging.info(f'StaleElementReferenceException:{link} ')
+                continue
             if key.lower() in title.lower():
                 total += value
         if total >= threshold:
@@ -205,14 +209,53 @@ def remove_superflous(string_list, superflous_strings):
 #TODO: Remove below prior to production
 
 def test__flow(site_id):
+    zips = [95032,95054, 94010,
+94536,
+94539,
+94402,
+94404,
+94403,
+94538,
+94560,
+94065,
+94063,
+94027,
+94002,
+94070,
+95134,
+95002,
+94062,
+94089,
+94301,
+94025,
+94303,
+95035,
+95140,
+94061,
+94043,
+94304,
+94305,
+94035,
+94306,
+94028,
+94040,
+94022,
+94085,
+94086,
+94024,
+94087]
     logging.info(f'TEST: {site_id}')
     template = SITES_DICT[site_id]['url_template']
     sep = SITES_DICT[site_id]['title_word_sep']
     title = build_job_title(['software', 'quality', 'assurance', 'engineer'], sep)
-    url = build_site_url(template, title , '120000', '95032', '60', '60')
     xpath_template = SITES_DICT[site_id ]['xpath_template']
     logging.info('Getting links')
-    links = get_jd_links(url, xpath_template)
+    links = []
+    for zip in zips:
+        print(f'Getting zip:{zip}')
+        url = build_site_url(template, title, '120000', str(zip), '60', '60')
+        links += get_jd_links(url, xpath_template)
+
     title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
                   'automation': 70, 'engineer': 20}
     logging.info('Filtering links')
