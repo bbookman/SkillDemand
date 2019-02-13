@@ -48,6 +48,8 @@ def get_jd_links(url, xpath_template):
         try:
             links.append(driver.find_element_by_xpath(xpath_template.format(i)))
         except NoSuchElementException:
+            element = xpath_template.format(i)
+            logging.info(f'NoSuchElementException: {element}')
             continue
     return links
 
@@ -96,19 +98,27 @@ def filter_titles(title_dict, links, threshold):
         for key, value in title_dict.items():
             title = link.text
             in_title = key in title
+            logging.debug(f'title: {title}, key: {key}, in_title?: {in_title}')
             if key.lower() in title.lower():
                 total += value
         if total >= threshold:
+            logging.debug('Threshold met, appending:{title}')
             result.append(link)
     return result
 
-def get_bodies(urls):
+def get_bodies(site_id, urls, selector='body'):
     bodies = []
     for url in urls:
-        url.click()
-        body = driver.find_element_by_tag_name('body').text
+        if site_id =='monster':
+            href = url.get_attribute("href")
+            driver.open(href)
+            #### HERE GET THE BODY IN THE NEW WINDOW
+        if site_id == 'indeed':
+            url.click()
+            body = driver.find_element_by_tag_name(selector).text
         bodies.append(body)
     return bodies
+
 
 
 def build_job_title(title_words, separator):
@@ -183,15 +193,22 @@ def remove_superflous(string_list, superflous_strings):
 #TODO: Remove below prior to production
 
 def test_flow():
-    template = SITES_DICT['indeed']['url_template']
-    url = build_site_url(template, 'software quality assurance engineer', '120000', '95032')
-    print(f'url: {url}')
-    xpath_template = SITES_DICT['indeed']['xpath_template']
+    template = SITES_DICT['monster']['url_template']
+    sep = SITES_DICT['monster']['title_word_sep']
+    title = build_job_title(['software', 'quality', 'assurance', 'engineer'], sep)
+    url = build_site_url(template, title , '120000', '95032')
+    xpath_template = SITES_DICT['monster']['xpath_template']
+    logging.info('Getting links')
     links = get_jd_links(url, xpath_template)
-    print('links[0]: ', links[0])
     title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
                   'automation': 70, 'engineer': 20}
+    logging.info('Filtering links')
     filtered_links = filter_titles(title_dict, links, 90)
-    print('filtered_links[0]: ',filtered_links[0])
-    bodies = get_bodies(filtered_links)
-    print(bodies[0])
+    if filtered_links:
+        logging.info('Got filtered links')
+    selector = SITES_DICT['monster']['body_selector']
+    bodies = get_bodies('monster', filtered_links, selector )
+    if bodies:
+        logging.info('Got bodies')
+        print(bodies[0])
+test_flow()

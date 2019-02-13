@@ -7,7 +7,13 @@ SITES_DICT = {
         'title_only_tempate': 'https://www.indeed.com/q-{}.html',
         'xpath_template' : '//*[@id="sja{}"]',
         'title_word_sep': '+',
+        'body_selector': 'body'
+    },
+    'monster':{
+        'url_template' : 'https://www.monster.com/jobs/search/?q={title}&rad={radius}%where={zipcode}&tm={age}',
+        'title_only_tempate': 'https://www.monster.com/jobs/search/?q={title}',
+        'xpath_template': '//section[2]/div/div[2]/header/h2/a',   #//span[@id='TrackingJobBody']
+        'title_word_sep': '-',
+        'body_selector': "//span[@id='TrackingJobBody']"
     },
 }
-
-

@@ -136,19 +136,3 @@ def test_remove_superflous(string_list, superflous_strings):
     ]
     result = remove_superflous(string_list, superflous_strings)
     assert result == expected
-
-\
-
-def test_flow():
-    template = SITES_DICT['indeed']['url_template']
-    url = build_site_url(template, 'data science engineer', '120000', '95032')
-    print(f'url: {url}')
-    xpath_template = SITES_DICT['indeed']['xpath_template']
-    links = get_jd_links(url, xpath_template)
-    print(links[0])
-    title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
-                  'automation': 70, 'engineer': 20}
-    filtered_links = filter_titles(title_dict, links, 90)
-    print(filtered_links[0])
-    bodies = get_bodies(filtered_links)
-    print(bodies[0])
