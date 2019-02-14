@@ -20,19 +20,41 @@ SITES_DICT = {
     },
 }
 
+SF_ZIPS = [95032,
 
-'''
-//*[@id="jl_f1d37e69b35a1bb9"]/a
-//*[@id="jl_2933e681f94ba751"]/a
-/html[1]/body[1]/table[2]/tbody[1]/tr[1]/td[1]/table[1]/tbody[1]/tr[1]/td[2]/div[8]/h2[1]/a[1] 
-/html[1]/body[1]/table[2]/tbody[1]/tr[1]/td[1]/table[1]/tbody[1]/tr[1]/td[2]/div[{}]/h2[1]/a[1]
+             95054, 94010,
+94536,
 
-<a href="/company/Marpo-Kinetics/jobs/Design-Manufacturing-Engineer-08a3f281cecce90a?fccid=a81d4ba8cc0d6bf6&amp;vjs=3" 
-target="_blank"
- rel="noopener nofollow" onmousedown="return rclk(this,jobmap[2],1);" 
- onclick="setRefineByCookie([]); return rclk(this,jobmap[2],true,1);" 
- title="Design/Manufacturing Engineer" 
- class="turnstileLink" 
- data-tn-element="jobTitle" xpath="1">Design/Manufacturing <b>Engineer</b></a>
-
-'''
+94539,
+94402,
+94404,
+94403,
+94538,
+94560,
+94065,
+94063,
+94027,
+94002,
+94070,
+95134,
+95002,
+94062,
+94089,
+94301,
+94025,
+94303,
+95035,
+95140,
+94061,
+94043,
+94304,
+94305,
+94035,
+94306,
+94028,
+94040,
+94022,
+94085,
+94086,
+94024,
+94087]

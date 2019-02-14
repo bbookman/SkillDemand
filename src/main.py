@@ -128,6 +128,39 @@ def remove_superflous(string_list, superflous_strings):
 
 
 def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salaries, geo, zip_codes, title_dict, threshold, radius='30', age='60'):
+    """
+
+    :param site_id: string, site identification such as "indeed" or "monster"
+    :param site_url_template: string, url template that will form the request to the job site
+    :param title:  string, desired job title
+    :param title_separator: string, each site may separate the job titles uniquely, for example indeed has title urls like title:='my-title-is-separated-by-dashes'
+    :param title_selector: string, the xpath or other method of finding the title
+    :param salaries: list, a list of strings for salary query.  example: ['50000', '100000', '200000']
+    :param geo: string, nice name of geographic location.  example "San Francisco", "Austin, Texas"
+    :param zip_codes: list of strings.  zip codes for the geo.  can be retrieved from https://catalog.data.gov/dataset/bay-area-zip-codes
+    :param title_dict: dictionary of keyword and value pairs.  keywords are those desired in the title.  values are the weights (see threshold)
+    :param threshold: int.  the weight threshold
+    :param radius: string, search radius for each zip.  defaults to 30
+    :param age: string, how old can the job postings be. defaults to 60
+    :return: results dictionary with data model:
+
+        [Geo]
+           [Zip]
+            [Salary]: list of bodies of job description pages that match desired job title..
+                      should be further processed by  get_skill_counts()
+                      ultimately replace the bodies with a DICTIONARY
+                      where keys are the job skill (ex: 'Java') and the value is the total count of that
+                      skill for the salary range
+
+        Example:
+
+        ['San Francisco': ['95054' : ['50000': (bodyA, bodyB, bodyC)] ] ]
+
+        Should become
+
+         ['San Francisco': ['95054' : ['50000': ['Java': 40, 'python': 24, 'pandas': 15] ] ]
+
+    """
     body_count = 0
     results = dict()
     income = dict()
@@ -199,48 +232,10 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
 
 
+'''
 
-#TODO: Remove below prior to production
+TEST
 
-
-zip_codes = [95032,
-
-             95054, 94010,
-94536,
-
-94539,
-94402,
-94404,
-94403,
-94538,
-94560,
-94065,
-94063,
-94027,
-94002,
-94070,
-95134,
-95002,
-94062,
-94089,
-94301,
-94025,
-94303,
-95035,
-95140,
-94061,
-94043,
-94304,
-94305,
-94035,
-94306,
-94028,
-94040,
-94022,
-94085,
-94086,
-94024,
-94087]
 
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
@@ -250,4 +245,5 @@ title_dict = {'software': 30, 'quality': 80, 'assurance': 10, 'qa': 80, 'sqa': 9
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zip_codes, title_dict, threshold, radius='30', age='60')
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='30', age='60')
+'''
