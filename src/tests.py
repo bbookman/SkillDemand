@@ -1,15 +1,9 @@
 from .main import *
-from selenium import webdriver
+from .constants import *
 
 '''
 Designed for pytest.  Probably can use unittest as well or nosetest
 '''
-
-def test_get_jd_links():
-    url = 'https://www.indeed.com/jobs?as_and=senior+technical+support+engineer&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&jt=fulltime&st=&as_src=&salary=145000&radius=100&l=San+Jose,+CA&fromage=300&limit=50&sort=&psf=advsrch'
-    xpath_template = '//*[@id="sja{}"]'
-    p = get_jd_links(url, xpath_template)
-    assert isinstance(p, list)
 
 
 def test_build_site_url():
@@ -19,39 +13,8 @@ def test_build_site_url():
     zipcode = 'test_location'
     radius = 'test_distance'
     age = 'test_age'
-    result = build_site_url(template, title, salary, zipcode, radius, age)
+    result = _build_site_url(template, title, salary, zipcode, radius, age)
     expected ='TITLE:test_title, SALARY:test_salary, LOCATION:test_location, DISTANCE:test_distance, POST_AGE:test_age'
-    assert result == expected
-
-def test_filter_titles():
-    title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
-    links = [
-        'software',
-        'software quality',
-        'software quality assurance',
-        'http://www.blah.com?fred="sdet"'
-        'automation quality'
-    ]
-    expected = [
-        'software quality',
-        'software quality assurance',
-        'http://www.blah.com?fred="sdet"'
-        'automation quality'
-    ]
-    threshold = 90
-    result = filter_titles(title_dict, links, threshold)
-    assert result == expected
-
-
-def test_get_related_titles():
-    links = [
-        'http://blah.com&title=Fred+Flintstone</a>',
-        'http://wee.com?h=foo&t=bar&title=Barny Rubbel</a>'
-    ]
-    title_start= 'title='
-    title_end = '</a>'
-    expected = ['Fred+Flintstone', 'Barny Rubbel']
-    result = get_related_titles(title_start, title_end, links)
     assert result == expected
 
 def test_build_job_title():
@@ -60,9 +23,9 @@ def test_build_job_title():
     'world',
     '!'
     ]
-    seperator = '+'
+    separator = '+'
     expected = 'Hello+world+!'
-    result = build_job_title(title_words, seperator)
+    result = _build_job_title(title_words, separator)
     assert result == expected
 
 def test_remove_stop_words():
@@ -117,13 +80,6 @@ def test_get_skill_counts():
 
     ]
     result = get_skill_counts(bodies, skill_list)
-    assert result == expected
-
-def test_build_title_only_url():
-    template = 'http://hithere.com?{}&oh'
-    title = 'TITLE'
-    expected = 'http://hithere.com?TITLE&oh'
-    result = build_title_only_url(template, title)
     assert result == expected
 
 def test_remove_superflous(string_list, superflous_strings):
