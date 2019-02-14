@@ -37,8 +37,6 @@ def start_driver():
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
-_driver = start_driver()
-
 def get_jd_links(url, xpath_template):
     """
     :param url: string , website url
@@ -65,7 +63,7 @@ def get_tiles(links):
     return [link.text for link in links]
 
 
-def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
+def _build_site_url(template, title, salary='', zipcode='', radius='30', age='60'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
@@ -135,15 +133,16 @@ def get_bodies(site_id, urls):
 
 
 
-def build_job_title(title_words, separator):
+def _build_job_title(title, title_separator):
     """ Takes list of title words and adds site specific separator between words
-    title_words: type = list
+    title: string
     separator: type = string
     returns string
     """
     result =''
-    for word in title_words:
-        result+= word + separator
+    words = title.split()
+    for word in words:
+        result+= word + title_separator
     return result[:-1]
 
 
@@ -206,10 +205,72 @@ def remove_superflous(string_list, superflous_strings):
 
 
 
+def do_it_all(site_id, site_url_template, title, title_separator, title_selector, salaries, zip_codes, title_dict, threshold, radius='30', age='60'):
+    results = dict()
+    income = dict()
+    browser = start_driver()
+    job_title = _build_job_title(title, title_separator)
+    logging.info(f'title:{job_title}')
+    print(f'title:{job_title.upper()}')
+    test = 0  #TODO REMOVE
+    for zip in zip_codes:
+        print(f'zip:{zip}')
+        logging.info(f'zip:{zip}')
+        for salary in salaries:
+            print(f'salary: {salary}')
+            logging.info(f'salary: {salary}')
+            url = _build_site_url(site_url_template, job_title, salary, zip, '30', '60')
+            browser.get(url)
+            logging.info(f'get: {url}')
+            try:
+                if site_id == 'indeed':
+                    job_links = browser.find_elements_by_class_name(title_selector)
+                    if job_links:
+                        jtitles = [link.text for link in job_links]
+                        hrefs = [link.get_attribute('href') for link in job_links]
+
+                        for keyword, value in title_dict.items():
+                            for i in range(len(jtitles)):
+                                match = 0
+                                if keyword.lower() in jtitles[i].lower():
+                                    match+= value
+                                if match >= threshold:
+                                    print(f'{jtitles[i]} - THRESHOLD MET: {match} score')
+                                    logging.info{f'{jtitles[i]} - THRESHOLD MET: {match} score')
+                                    ref = f'https://{site_id}.com' + hrefs[i]
+                                    logging.info(f'get: {ref}')
+                                    browser.get(ref)
+                                    body = browser.find_element_by_tag_name('body')
+                                    bt =  body.text[:121]
+                                    print(f'{zip} : {salary} : {bt}')
+                                    logging.info(f'{zip} : {salary} : {bt}')
+                                    income[salary] = bt
+                                    results[zip] = income
+                                    test+=1
+                                    if test == 30:
+                                        raise StaleElementReferenceException
+                                else:
+                                    logging.info(f'{jtitles[i]} THRESHOLD NOT MET')
+                                    print((f'{jtitles[i]} ######!!!!!!!!!!!!!$$$$$$$$$$$$  THRESHOLD NOT MET'))
+
+            except NoSuchElementException:
+                element = title_selector.format(i)
+                logging.info(f'NoSuchElementException: {element}')
+                print(f'NoSuchElementException: {element}')
+                continue
+
+    logging.info('len results: ', str(len(results)))
+    logging.info(f'{results}')
+    return results
+
+
+
+
+
 #TODO: Remove below prior to production
 
-def test__flow(site_id):
-    zips = [95032,95054, 94010,
+
+zip_codes = [95032,95054, 94010,
 94536,
 94539,
 94402,
@@ -244,26 +305,11 @@ def test__flow(site_id):
 94086,
 94024,
 94087]
-    logging.info(f'TEST: {site_id}')
-    template = SITES_DICT[site_id]['url_template']
-    sep = SITES_DICT[site_id]['title_word_sep']
-    title = build_job_title(['software', 'quality', 'assurance', 'engineer'], sep)
-    xpath_template = SITES_DICT[site_id ]['xpath_template']
-    logging.info('Getting links')
-    links = []
-    for zip in zips:
-        print(f'Getting zip:{zip}')
-        url = build_site_url(template, title, '120000', str(zip), '60', '60')
-        links += get_jd_links(url, xpath_template)
-
-    title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
-                  'automation': 70, 'engineer': 20}
-    logging.info('Filtering links')
-    filtered_links = filter_titles(title_dict, links, 90)
-    if filtered_links:
-        logging.info('Got filtered links')
-    bodies = get_bodies('monster', filtered_links)
-    if bodies:
-        logging.info('Got bodies. Total: ' +  str(len(bodies)))
-
-test__flow('indeed')
+site_id = 'indeed'
+title_separator = SITES_DICT[site_id]['title_word_sep']
+title_selector = SITES_DICT[site_id]['title_selector']
+salaries = ['50000', '75000', '100000', '150000', '200000']
+title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+threshold = 90
+site_url_template = SITES_DICT[site_id]['url_template']
+do_it_all(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries, zip_codes, title_dict, threshold, radius='30', age='60')
