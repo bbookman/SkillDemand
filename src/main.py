@@ -1,5 +1,6 @@
 from datetime import datetime
 import ssl
+import pdb, re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
@@ -37,35 +38,8 @@ def start_driver():
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
-_driver = start_driver()
 
-def get_jd_links(url, xpath_template):
-    """
-    :param url: string , website url
-    :param xpath:  string, xpath
-    :return: list of selenium webdriver objects
-    """
-    links = []
-    _driver.get(url)
-    for i in range(1,500):
-        try:
-            links.append(_driver.find_element_by_xpath(xpath_template.format(i)))
-        except NoSuchElementException:
-            element = xpath_template.format(i)
-            logging.info(f'NoSuchElementException: {element}')
-            continue
-    return links
-
-
-def get_tiles(links):
-    """
-    :param links: list of selenium web objects contining the job title url
-    :return: list of multi-word titles
-    """
-    return [link.text for link in links]
-
-
-def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'):
+def _build_site_url(template, title, salary='', zipcode='', radius='30', age='60'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
@@ -81,69 +55,17 @@ def build_site_url(template, title, salary='', zipcode='', radius='30', age='30'
     return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
 
 
-def build_title_only_url(template, title):
-    return template.format(title)
 
-def filter_titles(title_dict, links, threshold):
-    """ Uses title key words and a weight for each word to evaluate matching job titles
-
-    title_dict: type = dict, keys are single word parts of a job title and values represent
-                weight for each word
-    links: type = list, a list of job description links to evaluate
-    threshold: type = int, add the weights and if they meet or exceed this threshold then
-               the job title is considered a match
-
-    returns a list of matching links
-    """
-    result = []
-    for link in links:
-        total = 0
-        for key, value in title_dict.items():
-            try:
-                title = link.text
-                in_title = key in title
-                logging.debug(f'title: {title}, key: {key}, in_title?: {in_title}')
-            except StaleElementReferenceException:
-                logging.info(f'StaleElementReferenceException:{link} ')
-                continue
-            if key.lower() in title.lower():
-                total += value
-        if total >= threshold:
-            logging.debug('Threshold met, appending:{title}')
-            result.append(link)
-    return result
-
-def get_bodies(site_id, urls):
-    bodies = []
-    for url in urls:
-        if site_id =='monster':
-            try:
-                href = url.get_attribute('href')
-                _driver.get(href)
-            except StaleElementReferenceException:
-                url_str = str(url)
-                logging.info(f'StaleElementReferenceException: {url_str}')
-                print('StaleElementReferenceException')
-                continue
-
-            body = _driver.find_element_by_tag_name('body').text
-        if site_id == 'indeed':
-            url.click()
-            body = _driver.find_element_by_tag_name('body').text
-        bodies.append(body)
-    return bodies
-
-
-
-def build_job_title(title_words, separator):
+def _build_job_title(title, title_separator):
     """ Takes list of title words and adds site specific separator between words
-    title_words: type = list
+    title: string
     separator: type = string
     returns string
     """
     result =''
-    for word in title_words:
-        result+= word + separator
+    words = title.split()
+    for word in words:
+        result+= word + title_separator
     return result[:-1]
 
 
@@ -205,12 +127,87 @@ def remove_superflous(string_list, superflous_strings):
     pass
 
 
+def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salaries, geo, zip_codes, title_dict, threshold, radius='30', age='60'):
+    body_count = 0
+    results = dict()
+    income = dict()
+    zcode = dict()
+    for salary in salaries:
+        income.setdefault(salary, None )
+    for code in zip_codes:
+        zcode.setdefault(code, None)
+
+    browser = start_driver()
+    new_tab = start_driver()
+    job_title = _build_job_title(title, title_separator)
+    logging.info(f'title:{job_title}')
+    print(f'title:{job_title.upper()}')
+    for zip in zip_codes:
+        print(f'zip:{zip}')
+        logging.info(f'zip:{zip}')
+        for salary in salaries:
+            bodies = []
+            print(f'salary: {salary}')
+            logging.info(f'salary: {salary}')
+            url = _build_site_url(site_url_template, job_title, salary, zip, '30', '60')
+            browser.get(url)
+            logging.info(f'get: {url}')
+            try:
+                if site_id == 'indeed':
+                    job_links = browser.find_elements_by_class_name(title_selector)
+            except NoSuchElementException:
+                element = title_selector.format(i)
+                logging.info(f'NoSuchElementException: {element}')
+                print(f'NoSuchElementException: {element}')
+                continue
+            if job_links:
+                jtitles = [link.text for link in job_links]
+                hrefs = [link.get_attribute('href') for link in job_links]
+                for index, title in enumerate(jtitles):
+                    print(f'Checking: {title}')
+                    logging.info(f'Checking: {title}')
+                    title = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", title)
+                    title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
+                    evaluate = title.split()
+                    match = 0
+                    for word in evaluate:
+                        for keyword, value in title_dict.items():
+                            if keyword.lower() == word.lower():
+                                match += value
+                                logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
+                    if match < threshold:
+                        print(f'THRESHOLD NOT MET: {title}')
+                        logging.info(f'THRESHOLD NOT MET: {title}')
+                        continue
+                    else:
+                        print(f'MET THRESHOLD: {title}')
+                        logging.info(f'MET THRESHOLD: {title}')
+                        job_description_url = hrefs[index]
+                        new_tab.get(job_description_url )
+                        body = new_tab.find_element_by_tag_name('body').text
+                        bodies.append(body)
+                        body_count+=1
+                income[salary] = bodies
+                zcode[zip] = income
+                results[geo] = zcode
+
+    logging.debug(results)
+    print('=============')
+    print(f'Body Count: {body_count}')
+    logging.info(f'Body Count: {body_count}')
+    return results
+
+
+
 
 #TODO: Remove below prior to production
 
-def test__flow(site_id):
-    zips = [95032,95054, 94010,
+
+zip_codes = [95032,
+
+             95054, 94010,
 94536,
+
 94539,
 94402,
 94404,
@@ -244,26 +241,13 @@ def test__flow(site_id):
 94086,
 94024,
 94087]
-    logging.info(f'TEST: {site_id}')
-    template = SITES_DICT[site_id]['url_template']
-    sep = SITES_DICT[site_id]['title_word_sep']
-    title = build_job_title(['software', 'quality', 'assurance', 'engineer'], sep)
-    xpath_template = SITES_DICT[site_id ]['xpath_template']
-    logging.info('Getting links')
-    links = []
-    for zip in zips:
-        print(f'Getting zip:{zip}')
-        url = build_site_url(template, title, '120000', str(zip), '60', '60')
-        links += get_jd_links(url, xpath_template)
 
-    title_dict = {'software': 30, 'quality': 80, 'assurance': 90, 'qa': 100, 'sqa': 100, 'sdet': 100, 'test': 70,
-                  'automation': 70, 'engineer': 20}
-    logging.info('Filtering links')
-    filtered_links = filter_titles(title_dict, links, 90)
-    if filtered_links:
-        logging.info('Got filtered links')
-    bodies = get_bodies('monster', filtered_links)
-    if bodies:
-        logging.info('Got bodies. Total: ' +  str(len(bodies)))
-
-test__flow('indeed')
+site_id = 'indeed'
+title_separator = SITES_DICT[site_id]['title_word_sep']
+title_selector = SITES_DICT[site_id]['title_selector']
+salaries = ['50000', '75000', '100000', '150000', '200000']
+title_dict = {'software': 30, 'quality': 80, 'assurance': 10, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+threshold = 90
+site_url_template = SITES_DICT[site_id]['url_template']
+geo = 'San Francisco Bay Area'
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zip_codes, title_dict, threshold, radius='30', age='60')
