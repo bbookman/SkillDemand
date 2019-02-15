@@ -182,7 +182,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             bodies = []
             print(f'salary: {salary}')
             logging.info(f'salary: {salary}')
-            url = _build_site_url(site_url_template, job_title, salary, zip, '30', '60')
+            url = _build_site_url(site_url_template, job_title, salary, zip, radius, age)
             browser.get(url)
             logging.info(f'get: {url}')
             try:
