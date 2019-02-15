@@ -261,15 +261,16 @@ threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='60',)
-'''
+
 
 
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
 salaries = ['50000', '75000', '100000', '150000', '200000']
-title_dict = {'software': 30, 'quality': 80, 'assurance': 10, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='30', age='60')
+'''
