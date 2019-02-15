@@ -21,10 +21,17 @@ SITES_DICT = {
 
     'indeed' :{
         'url_template' : 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',
-        'title_only_template': 'https://www.indeed.com/q-{}.html',
         'title_selector' : 'turnstileLink',
         'title_word_sep': '+',
         'body_selector': 'body'
+    },
+
+    'careerbuilder' : {
+        'url_template' : 'https://www.careerbuilder.com/jobs?keywords={title}&location={zipcode}&radius={radius}&pay={salary}', #first 3 nums
+        'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
+        'title_word_sep': '+',
+        'body_selector': 'body'
+
     },
     'monster':{
         'url_template' : 'https://www.monster.com/jobs/search/?q={title}&rad={radius}%where={zipcode}&tm={age}',
@@ -35,8 +42,10 @@ SITES_DICT = {
     },
 }
 
-SF_ZIPS = [95032,
+#todo: change below
 
+SF_ZIPS = [95032,]
+'''
              95054, 94010,
 94536,
 
@@ -73,3 +82,4 @@ SF_ZIPS = [95032,
 94086,
 94024,
 94087]
+'''

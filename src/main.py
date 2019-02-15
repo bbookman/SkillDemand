@@ -39,7 +39,7 @@ def start_driver():
     return driver
 
 
-def _build_site_url(template, title, salary='', zipcode='', radius='30', age='60'):
+def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30', age='60'):
     """ Makes an url with each query item inserted into the url template
 
     template: type = str, the url template.  example: 'http://indeed.com?{}&afg=&rfr=&title={}'
@@ -51,9 +51,10 @@ def _build_site_url(template, title, salary='', zipcode='', radius='30', age='60
 
     returns an url string
     """
-
-    return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
-
+    if site_id == 'indeed':
+        return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
+    if site_id == 'careerbuilder':
+        return template.format(title=title, salary=salary, zipcode=zipcode, radius=radius)
 
 
 def _build_job_title(title, title_separator):
@@ -166,9 +167,9 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     income = dict()
     zcode = dict()
     for salary in salaries:
-        income.setdefault(salary, None )
+        income.setdefault(salary, list())
     for code in zip_codes:
-        zcode.setdefault(code, None)
+        zcode.setdefault(code, dict())
 
     browser = start_driver()
     new_tab = start_driver()
@@ -182,20 +183,25 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             bodies = []
             print(f'salary: {salary}')
             logging.info(f'salary: {salary}')
-            url = _build_site_url(site_url_template, job_title, salary, zip, radius, age)
+            url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
             browser.get(url)
             logging.info(f'get: {url}')
-            try:
-                if site_id == 'indeed':
-                    job_links = browser.find_elements_by_class_name(title_selector)
-            except NoSuchElementException:
-                element = title_selector.format(i)
-                logging.info(f'NoSuchElementException: {element}')
-                print(f'NoSuchElementException: {element}')
-                continue
-            if job_links:
+
+            for page_index in range(50): #todo increase
+                try:
+                    if site_id == 'indeed':
+                        job_links = browser.find_elements_by_class_name(title_selector)
+                    if site_id == 'careerbuilder':
+                        job_links = list()
+                        job_links.append(browser.find_element_by_xpath(title_selector.format(page_index)))
+                except NoSuchElementException:
+                    element = title_selector.format(page_index)
+                    logging.info(f'NoSuchElementException: {element}')
+                    print(f'NoSuchElementException: {element}')
+                    continue
                 jtitles = [link.text for link in job_links]
                 hrefs = [link.get_attribute('href') for link in job_links]
+
                 for index, title in enumerate(jtitles):
                     print(f'Checking: {title}')
                     logging.info(f'Checking: {title}')
@@ -218,19 +224,42 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                         job_description_url = hrefs[index]
                         new_tab.get(job_description_url )
                         body = new_tab.find_element_by_tag_name('body').text
-                        bodies.append(body)
+                        #pdb.set_trace()
+                        #todo remove
+                        body = body[:10]
+                        #bodies.append(body)
                         body_count+=1
-                income[salary] = bodies
-                zcode[zip] = income
-                results[geo] = zcode
+                        if site_id == 'indeed':
+                            income[salary].append(body)
+                            zcode[zip] = income
+                            results[geo] = zcode
+                            break
+                        if site_id == 'careerbuilder':
+                            income[salary].append(body)
+                            continue
+            zcode[zip] = income
+            results[geo] = zcode
 
-    logging.debug(results)
+
+    logging.info('=====================================================')
+    logging.info(results)
     print('=============')
     print(f'Body Count: {body_count}')
     logging.info(f'Body Count: {body_count}')
     return results
 
 
+
+
+site_id = 'careerbuilder'
+title_separator = SITES_DICT[site_id]['title_word_sep']
+title_selector = SITES_DICT[site_id]['title_selector']
+salaries = ['50', '75', '100', '150', '200']
+title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+threshold = 90
+site_url_template = SITES_DICT[site_id]['url_template']
+geo = 'San Francisco Bay Area'
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='60',)
 
 '''
 
