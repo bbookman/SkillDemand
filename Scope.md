@@ -53,7 +53,7 @@ The program will scrape publicly available job opening data from popular job sea
 * After user supplies a job title, a set of possible similar titles are presented.  These can be added to the users set of target titles
 * After the user supplies an initial set of skills, a set of skills within the same domain will be presented and the user can add these indicating desire to include in results
 
-#Document
+## Document
 This document was copied from [original google doc](https://docs.google.com/document/d/1z0yQyPqB6xyIo5EwPaph5A9CERkfgL8gPs7JxKRMhnY/edit?usp=sharing)
 This will now be the living and official document
 
