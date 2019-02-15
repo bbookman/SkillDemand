@@ -27,7 +27,7 @@ SITES_DICT = {
     },
 
     'careerbuilder' : {
-        'url_template' : 'https://www.careerbuilder.com/jobs?keywords={title}&location={zipcode}&radius={radius}&pay={salary}', #first 3 nums
+        'url_template' : 'https://www.careerbuilder.com/jobs?keywords={title}&location={zipcode}&radius={radius}&pay={salary}',
         'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
         'title_word_sep': '+',
         'body_selector': 'body'

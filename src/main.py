@@ -17,17 +17,6 @@ def make_date_string():
 logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
 ssl._create_default_https_context = ssl._create_unverified_context
 
-#GLOBALS
-
-_job_title_list = []
-_weight_dictionary = dict()
-_skills = []
-_title_string = ''
-_salary = ''
-_zipcode =''
-_radius='30'
-_age = '30'
-
 
 def start_driver():
 
@@ -176,69 +165,81 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     job_title = _build_job_title(title, title_separator)
     logging.info(f'title:{job_title}')
     print(f'title:{job_title.upper()}')
-    for zip in zip_codes:
-        print(f'zip:{zip}')
-        logging.info(f'zip:{zip}')
-        for salary in salaries:
-            bodies = []
-            print(f'salary: {salary}')
-            logging.info(f'salary: {salary}')
-            url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
-            browser.get(url)
-            logging.info(f'get: {url}')
+    for page in range(11):  #todo change
+        if site_id == 'careerbuilder':
+            print("----------------------------------------------")
+            print(f'Page:{page}')
+            print("----------------------------------------------")
+        for zip in zip_codes:
+            print(f'zip:{zip}')
+            logging.info(f'zip:{zip}')
+            for salary in salaries:
+                bodies = []
+                print(f'salary: {salary}')
+                logging.info(f'salary: {salary}')
+                url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
+                if site_id == 'careerbuilder':
+                    url += f'page={page}'
+                browser.get(url)
+                logging.info(f'get: {url}')
 
-            for page_index in range(50): #todo increase
-                try:
-                    if site_id == 'indeed':
-                        job_links = browser.find_elements_by_class_name(title_selector)
-                    if site_id == 'careerbuilder':
-                        job_links = list()
-                        job_links.append(browser.find_element_by_xpath(title_selector.format(page_index)))
-                except NoSuchElementException:
-                    element = title_selector.format(page_index)
-                    logging.info(f'NoSuchElementException: {element}')
-                    print(f'NoSuchElementException: {element}')
-                    continue
-                jtitles = [link.text for link in job_links]
-                hrefs = [link.get_attribute('href') for link in job_links]
-
-                for index, title in enumerate(jtitles):
-                    print(f'Checking: {title}')
-                    logging.info(f'Checking: {title}')
-                    title = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", title)
-                    title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
-                    evaluate = title.split()
-                    match = 0
-                    for word in evaluate:
-                        for keyword, value in title_dict.items():
-                            if keyword.lower() == word.lower():
-                                match += value
-                                logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
-                    if match < threshold:
-                        print(f'THRESHOLD NOT MET: {title}')
-                        logging.info(f'THRESHOLD NOT MET: {title}')
-                        continue
-                    else:
-                        print(f'MET THRESHOLD: {title}')
-                        logging.info(f'MET THRESHOLD: {title}')
-                        job_description_url = hrefs[index]
-                        new_tab.get(job_description_url )
-                        body = new_tab.find_element_by_tag_name('body').text
-                        #pdb.set_trace()
-                        #todo remove
-                        body = body[:10]
-                        #bodies.append(body)
-                        body_count+=1
+                for title_index in range(26):
+                    try:
                         if site_id == 'indeed':
-                            income[salary].append(body)
-                            zcode[zip] = income
-                            results[geo] = zcode
-                            break
+                            job_links = browser.find_elements_by_class_name(title_selector)
                         if site_id == 'careerbuilder':
-                            income[salary].append(body)
+                            job_links = list()
+                            job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
+                    except NoSuchElementException:
+                        element = title_selector.format(title_index)
+                        logging.info(f'NoSuchElementException: {element}')
+                        print(f'NoSuchElementException: {element}')
+                        continue
+
+                    jtitles = [link.text for link in job_links]
+                    hrefs = [link.get_attribute('href') for link in job_links]
+
+                    for index, title in enumerate(jtitles):
+                        print(f'Checking: {title}')
+                        logging.info(f'Checking: {title}')
+                        title = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", title)
+                        title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
+                        evaluate = title.split()
+                        match = 0
+                        for word in evaluate:
+                            for keyword, value in title_dict.items():
+                                if keyword.lower() == word.lower():
+                                    match += value
+                                    logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
+                        if match < threshold:
+                            print(f'THRESHOLD NOT MET: {title}')
+                            logging.info(f'THRESHOLD NOT MET: {title}')
                             continue
-            zcode[zip] = income
-            results[geo] = zcode
+                        else:
+                            print(f'MET THRESHOLD: {title}')
+                            logging.info(f'MET THRESHOLD: {title}')
+                            job_description_url = hrefs[index]
+                            new_tab.get(job_description_url )
+                            body = new_tab.find_element_by_tag_name('body').text
+                            #pdb.set_trace()
+                            #todo remove
+                            body = body[:10]
+                            #bodies.append(body)
+                            body_count+=1
+                            if site_id == 'indeed':
+                                income[salary].append(body)
+                                zcode[zip] = income
+                                results[geo] = zcode
+                                break
+                            if site_id == 'careerbuilder':
+                                income[salary].append(body)
+                                continue
+
+                    if site_id == 'indeed':
+                        break
+
+                zcode[zip] = income
+                results[geo] = zcode
 
 
     logging.info('=====================================================')
@@ -250,7 +251,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
 
 
-
+'''
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -260,10 +261,7 @@ threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='60',)
-
 '''
-
-TEST
 
 
 site_id = 'indeed'
@@ -275,4 +273,3 @@ threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='30', age='60')
-'''
