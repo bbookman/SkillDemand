@@ -3,7 +3,6 @@ import ssl
 import pdb, re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-
 from selenium.common.exceptions import StaleElementReferenceException
 #from nltk.tokenize import sent_tokenize, word_tokenize
 import logging
@@ -41,10 +40,11 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
     returns an url string
     """
     if site_id == 'indeed':
-        return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
+        url = template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
-        return template.format(title=title, salary=salary, zipcode=zipcode, radius=radius)
-
+        pre_amble = _build_job_title(title, '-')
+        url = template.format(career_builder_string = pre_amble, title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
+    return url
 
 def _build_job_title(title, title_separator):
     """ Takes list of title words and adds site specific separator between words
@@ -89,23 +89,8 @@ def remove_html_from_bodies(bodies):
     """
     pass
 
-def get_skill_counts(bodies, skill_list):
-    """ Counts the UNIQUE time a skill is present in the body of a job description
 
-    bodies: list of strings
-    skill_list: list of strings to match / count
-    returns: dictionary.  Keys are the skill, values are the total counts for
-             each instance a skill appears once in a job body
-
-    example result:
-        {'java': 30, 'maven: 3', 'python': 28}  .. this means there were 30 job descriptions
-        which used the word java ONCE
-
-    hint:  LOWERCASE the bodies, the skill list, and the results using string.lower()
-    """
-    pass
-
-def remove_superflous(string_list, superflous_strings):
+def _remove_superflous(string_list):
     """ Removes unnecessary strings such as "director" and "manager"
     Because "director of software engineering" is more or less the same as "manager of software engineering"
 
@@ -114,7 +99,14 @@ def remove_superflous(string_list, superflous_strings):
 
     returns list of strings
     """
-    pass
+    result = []
+    for word in string_list:
+        for s in SUPERFLOUS_STRINGS:
+            if word.lower() != s:
+                result.append(s)
+    return result
+
+
 
 
 def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salaries, geo, zip_codes, title_dict, threshold, radius='30', age='60'):
@@ -136,40 +128,29 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
         [Geo]
            [Zip]
-            [Salary]: list of bodies of job description pages that match desired job title..
-                      should be further processed by  get_skill_counts()
-                      ultimately replace the bodies with a DICTIONARY
-                      where keys are the job skill (ex: 'Java') and the value is the total count of that
-                      skill for the salary range
-
-        Example:
-
-        ['San Francisco': ['95054' : ['50000': (bodyA, bodyB, bodyC)] ] ]
-
-        Should become
-
+            [Salary] :
+                ['skill': count]
+    example:        
          ['San Francisco': ['95054' : ['50000': ['Java': 40, 'python': 24, 'pandas': 15] ] ]
 
     """
-    body_count = 0
     results = dict()
     income = dict()
     zcode = dict()
+    skill_counts = dict()
     for salary in salaries:
-        income.setdefault(salary, list())
+        income.setdefault(salary, dict())
     for code in zip_codes:
         zcode.setdefault(code, dict())
+    for skill in SKILL_KEYWORDS:
+        skill_counts.setdefault(skill, 0)
 
     browser = start_driver()
     new_tab = start_driver()
     job_title = _build_job_title(title, title_separator)
     logging.info(f'title:{job_title}')
     print(f'title:{job_title.upper()}')
-    for page in range(11):  #todo change
-        if site_id == 'careerbuilder':
-            print("----------------------------------------------")
-            print(f'Page:{page}')
-            print("----------------------------------------------")
+    for page in range(1,6):  #todo change
         for zip in zip_codes:
             print(f'zip:{zip}')
             logging.info(f'zip:{zip}')
@@ -180,9 +161,12 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
                 if site_id == 'careerbuilder':
                     url += f'page={page}'
+                    print("----------------------------------------------")
+                    print(f'Page:{page}')
+                    print(f'URL:{url}')
+                    print("----------------------------------------------")
                 browser.get(url)
                 logging.info(f'get: {url}')
-
                 for title_index in range(26):
                     try:
                         if site_id == 'indeed':
@@ -195,15 +179,13 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                         logging.info(f'NoSuchElementException: {element}')
                         print(f'NoSuchElementException: {element}')
                         continue
-
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
-
                     for index, title in enumerate(jtitles):
                         print(f'Checking: {title}')
                         logging.info(f'Checking: {title}')
                         title = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", title)
-                        title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
+                        title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)
                         evaluate = title.split()
                         match = 0
                         for word in evaluate:
@@ -221,18 +203,19 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                             job_description_url = hrefs[index]
                             new_tab.get(job_description_url )
                             body = new_tab.find_element_by_tag_name('body').text
-                            #pdb.set_trace()
-                            #todo remove
-                            body = body[:10]
-                            #bodies.append(body)
-                            body_count+=1
+                            sp_body = body.split()
+                            words = _remove_superflous(sp_body)
+                            for skill in SKILL_KEYWORDS:
+                                for word in words:
+                                    if skill.lower() == word.lower():
+                                        skill_counts[skill] +=1
                             if site_id == 'indeed':
-                                income[salary].append(body)
+                                income[salary] = skill_counts
                                 zcode[zip] = income
                                 results[geo] = zcode
                                 break
                             if site_id == 'careerbuilder':
-                                income[salary].append(body)
+                                income[salary] = skill_counts
                                 continue
 
                     if site_id == 'indeed':
@@ -245,13 +228,12 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     logging.info('=====================================================')
     logging.info(results)
     print('=============')
-    print(f'Body Count: {body_count}')
-    logging.info(f'Body Count: {body_count}')
+    print(results)
     return results
 
 
 
-'''
+
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -262,7 +244,7 @@ site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='60',)
 
-
+'''
 
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']

@@ -25,12 +25,11 @@ SITES_DICT = {
         'title_word_sep': '+',
         'body_selector': 'body'
     },
-
+#https://www.careerbuilder.com/jobs-software-quality-assurance-engineer-in-95032?keywords=software+quality+assurance+engineer&location=95032&posted=7&pay=100
     'careerbuilder' : {
-        'url_template' : 'https://www.careerbuilder.com/jobs?keywords={title}&location={zipcode}&radius={radius}&pay={salary}',
+        'url_template' : 'https://www.careerbuilder.com/jobs?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}',
         'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
         'title_word_sep': '+',
-        'body_selector': 'body'
 
     },
     'monster':{
@@ -38,10 +37,11 @@ SITES_DICT = {
         'title_only_tempate': 'https://www.monster.com/jobs/search/?q={title}',
         'title_selector': '//section[{}]/div/div[2]/header/h2/a',
         'title_word_sep': '-',
-        'body_selector': 'body'
     },
 }
-
+'''
+https://www.careerbuilder.com/jobs-software-quality-assurance-engineer-in-95032?keywords=software+quality+assurance+engineer&location=95032&posted=7&pay=100
+'''
 #todo: change below
 
 SF_ZIPS = [95032,]
