@@ -1,7 +1,7 @@
 SUPERFLOUS_STRINGS = ['senior', 'director', 'manager', 'lead', 'mobile', 'sr', 'jr', 'I', 'II', 'III', 'IV','V' ,'(', ')', '.', ',', '/', '\\', "\'", '\"', '-',]
 
 
-SKILL_KEYWORDS =['bash', 'python', 'java', 'c++', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
+SKILL_KEYWORDS =['regression', 'bash', 'python', 'java', 'c++', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
                  'php', 'Sauce Labs', 'flask', 'shell', 'Telecom', 'NAS', 'SAN', 'iSCSI', 'scripts', 'scripting',
                  'junit', 'selenium', 'react', 'c#', 'TestRail', 'Confluence', 'JMeter',
                 'tableau', 'd3.js', 'sas', 'spss', 'd3', 'saas', 'pandas', 'numpy', 'Jenkins', 'scipy', 'plan', 'case',
@@ -25,9 +25,8 @@ SITES_DICT = {
         'title_word_sep': '+',
         'body_selector': 'body'
     },
-#https://www.careerbuilder.com/jobs-software-quality-assurance-engineer-in-95032?keywords=software+quality+assurance+engineer&location=95032&posted=7&pay=100
     'careerbuilder' : {
-        'url_template' : 'https://www.careerbuilder.com/jobs?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}',
+        'url_template' : 'https://www.careerbuilder.com/jobs-{career_builder_string}&keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}',
         'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
         'title_word_sep': '+',
 

@@ -130,7 +130,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
            [Zip]
             [Salary] :
                 ['skill': count]
-    example:        
+    example:
          ['San Francisco': ['95054' : ['50000': ['Java': 40, 'python': 24, 'pandas': 15] ] ]
 
     """
@@ -205,6 +205,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                             body = new_tab.find_element_by_tag_name('body').text
                             sp_body = body.split()
                             words = _remove_superflous(sp_body)
+                            import pdb; pdb.set_trace()
                             for skill in SKILL_KEYWORDS:
                                 for word in words:
                                     if skill.lower() == word.lower():
@@ -229,6 +230,8 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     logging.info(results)
     print('=============')
     print(results)
+    #browser.close()
+    #new_tab.close()
     return results
 
 
