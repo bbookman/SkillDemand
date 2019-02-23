@@ -42,8 +42,9 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
     if site_id == 'indeed':
         url = template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
-        pre_amble = _build_job_title(title, '-')
+        pre_amble = _build_job_title(title, '-') + '-in-' + zipcode
         url = template.format(career_builder_string = pre_amble, title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
+        import pdb; pdb.set_trace()
     return url
 
 def _build_job_title(title, title_separator):
@@ -134,6 +135,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
          ['San Francisco': ['95054' : ['50000': ['Java': 40, 'python': 24, 'pandas': 15] ] ]
 
     """
+    zip_codes = list(map(lambda x: str(x), zip_codes))
     results = dict()
     income = dict()
     zcode = dict()
