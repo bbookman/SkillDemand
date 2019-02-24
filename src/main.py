@@ -43,7 +43,9 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
     if site_id == 'indeed':
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
-        return template.format(title=title, salary=salary, zipcode=zipcode, radius=radius)
+        cbtitle = _build_job_title(title, '-')
+        import pdb; pdb.set_trace()
+        return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age, cbtitle = cbtitle)
 
 
 def _build_job_title(title, title_separator):
@@ -177,8 +179,10 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 bodies = []
                 print(f'salary: {salary}')
                 logging.info(f'salary: {salary}')
-                url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
+                if site_id == 'indeed':
+                    url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
                 if site_id == 'careerbuilder':
+                    url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
                     url += f'page={page}'
                 browser.get(url)
                 logging.info(f'get: {url}')
@@ -251,7 +255,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
 
 
-'''
+
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -261,8 +265,8 @@ threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='60',)
-'''
 
+'''
 
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
@@ -273,3 +277,4 @@ threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='30', age='60')
+'''
