@@ -1,6 +1,6 @@
 from datetime import datetime
 import ssl
-import pdb, re
+import re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
@@ -44,9 +44,7 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
         cbtitle = _build_job_title(title, '-')
-        import pdb; pdb.set_trace()
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age, cbtitle = cbtitle)
-
 
 def _build_job_title(title, title_separator):
     """ Takes list of title words and adds site specific separator between words
@@ -167,7 +165,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     job_title = _build_job_title(title, title_separator)
     logging.info(f'title:{job_title}')
     print(f'title:{job_title.upper()}')
-    for page in range(11):  #todo change
+    for page in range(4):  #todo change
         if site_id == 'careerbuilder':
             print("----------------------------------------------")
             print(f'Page:{page}')
@@ -184,6 +182,9 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 if site_id == 'careerbuilder':
                     url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
                     url += f'page={page}'
+                    if salary == '75':
+                        import pdb; pdb.set_trace()
+                        # !!!!!!!!!!!!!!!!!!!!! GETTING THE WRONG TITLE!!!!!!!!!!!!!!!!! todo
                 browser.get(url)
                 logging.info(f'get: {url}')
 
@@ -203,12 +204,12 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
 
-                    for index, title in enumerate(jtitles):
+                    for index, t in enumerate(jtitles):
                         print(f'Checking: {title}')
-                        logging.info(f'Checking: {title}')
-                        title = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", title)
-                        title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
-                        evaluate = title.split()
+                        logging.info(f'Checking: {t}')
+                        t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
+                        t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
+                        evaluate = t.split()
                         match = 0
                         for word in evaluate:
                             for keyword, value in title_dict.items():
@@ -216,12 +217,12 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                     match += value
                                     logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
                         if match < threshold:
-                            print(f'THRESHOLD NOT MET: {title}')
-                            logging.info(f'THRESHOLD NOT MET: {title}')
+                            print(f'THRESHOLD NOT MET: {t}')
+                            logging.info(f'THRESHOLD NOT MET: {t}')
                             continue
                         else:
-                            print(f'MET THRESHOLD: {title}')
-                            logging.info(f'MET THRESHOLD: {title}')
+                            print(f'MET THRESHOLD: {t}')
+                            logging.info(f'MET THRESHOLD: {t}')
                             job_description_url = hrefs[index]
                             new_tab.get(job_description_url )
                             body = new_tab.find_element_by_tag_name('body').text
