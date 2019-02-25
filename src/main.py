@@ -1,6 +1,6 @@
 from datetime import datetime
 import ssl
-import pdb, re
+import re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
@@ -43,8 +43,9 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
     if site_id == 'indeed':
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
-        return template.format(title=title, salary=salary, zipcode=zipcode, radius=radius)
-
+        cbtitle = _build_job_title(title, '-')
+        title = _build_job_title(title, '+')
+        return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age, cbtitle = cbtitle)
 
 def _build_job_title(title, title_separator):
     """ Takes list of title words and adds site specific separator between words
@@ -89,21 +90,6 @@ def remove_html_from_bodies(bodies):
     """
     pass
 
-def get_skill_counts(bodies, skill_list):
-    """ Counts the UNIQUE time a skill is present in the body of a job description
-
-    bodies: list of strings
-    skill_list: list of strings to match / count
-    returns: dictionary.  Keys are the skill, values are the total counts for
-             each instance a skill appears once in a job body
-
-    example result:
-        {'java': 30, 'maven: 3', 'python': 28}  .. this means there were 30 job descriptions
-        which used the word java ONCE
-
-    hint:  LOWERCASE the bodies, the skill list, and the results using string.lower()
-    """
-    pass
 
 def remove_superflous(string_list, superflous_strings):
     """ Removes unnecessary strings such as "director" and "manager"
@@ -117,7 +103,7 @@ def remove_superflous(string_list, superflous_strings):
     pass
 
 
-def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salaries, geo, zip_codes, title_dict, threshold, radius='30', age='60'):
+def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salaries, geo, zip_codes, title_dict, threshold, skills, radius='30', age='60'):
     """
 
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -136,36 +122,27 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
         [Geo]
            [Zip]
-            [Salary]: list of bodies of job description pages that match desired job title..
-                      should be further processed by  get_skill_counts()
-                      ultimately replace the bodies with a DICTIONARY
-                      where keys are the job skill (ex: 'Java') and the value is the total count of that
-                      skill for the salary range
-
-        Example:
-
-        ['San Francisco': ['95054' : ['50000': (bodyA, bodyB, bodyC)] ] ]
-
-        Should become
+            [Salary]
+                [Skill dictionary]
 
          ['San Francisco': ['95054' : ['50000': ['Java': 40, 'python': 24, 'pandas': 15] ] ]
 
     """
-    body_count = 0
+
     results = dict()
     income = dict()
     zcode = dict()
+    skill_dict = dict()
     for salary in salaries:
         income.setdefault(salary, list())
     for code in zip_codes:
         zcode.setdefault(code, dict())
-
     browser = start_driver()
     new_tab = start_driver()
     job_title = _build_job_title(title, title_separator)
     logging.info(f'title:{job_title}')
     print(f'title:{job_title.upper()}')
-    for page in range(11):  #todo change
+    for page in range(1,7):
         if site_id == 'careerbuilder':
             print("----------------------------------------------")
             print(f'Page:{page}')
@@ -174,11 +151,14 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             print(f'zip:{zip}')
             logging.info(f'zip:{zip}')
             for salary in salaries:
-                bodies = []
+                for skill in skills:
+                    skill_dict.setdefault(skill, 0)
                 print(f'salary: {salary}')
                 logging.info(f'salary: {salary}')
-                url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
+                if site_id == 'indeed':
+                    url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
                 if site_id == 'careerbuilder':
+                    url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
                     url += f'page={page}'
                 browser.get(url)
                 logging.info(f'get: {url}')
@@ -199,12 +179,12 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
 
-                    for index, title in enumerate(jtitles):
+                    for index, t in enumerate(jtitles):
                         print(f'Checking: {title}')
-                        logging.info(f'Checking: {title}')
-                        title = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", title)
-                        title = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", title)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
-                        evaluate = title.split()
+                        logging.info(f'Checking: {t}')
+                        t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
+                        t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
+                        evaluate = t.split()
                         match = 0
                         for word in evaluate:
                             for keyword, value in title_dict.items():
@@ -212,27 +192,31 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                     match += value
                                     logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
                         if match < threshold:
-                            print(f'THRESHOLD NOT MET: {title}')
-                            logging.info(f'THRESHOLD NOT MET: {title}')
+                            print(f'THRESHOLD NOT MET: {t}')
+                            logging.info(f'THRESHOLD NOT MET: {t}')
                             continue
                         else:
-                            print(f'MET THRESHOLD: {title}')
-                            logging.info(f'MET THRESHOLD: {title}')
+                            print(f'MET THRESHOLD: {t}')
+                            logging.info(f'MET THRESHOLD: {t}')
                             job_description_url = hrefs[index]
                             new_tab.get(job_description_url )
                             body = new_tab.find_element_by_tag_name('body').text
-                            #pdb.set_trace()
-                            #todo remove
-                            body = body[:10]
-                            #bodies.append(body)
-                            body_count+=1
+                            sbody = body.split()
+                            for skill in skills:
+                                for word in sbody:
+                                    logging.debug(f'Check skill:{skill} == word:{word}')
+                                    if skill.lower() == word.lower():
+                                        logging.info(f'Found skill:{skill}')
+                                        print(f'Found skill:{skill}')
+                                        skill_dict[skill]+=1
+                                        break
                             if site_id == 'indeed':
-                                income[salary].append(body)
+                                income[salary] = skill_dict
                                 zcode[zip] = income
                                 results[geo] = zcode
                                 break
                             if site_id == 'careerbuilder':
-                                income[salary].append(body)
+                                income[salary] = skill_dict
                                 continue
 
                     if site_id == 'indeed':
@@ -244,14 +228,11 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
     logging.info('=====================================================')
     logging.info(results)
-    print('=============')
-    print(f'Body Count: {body_count}')
-    logging.info(f'Body Count: {body_count}')
     return results
 
-
-
 '''
+
+skills = SKILL_KEYWORDS_QA
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -260,10 +241,10 @@ title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 9
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='60',)
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='60', age = '60')
 
-
-
+'''
+skills = SKILL_KEYWORDS_QA
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -272,5 +253,4 @@ title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 9
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='30', age='60')
-'''
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='30', age='60')
