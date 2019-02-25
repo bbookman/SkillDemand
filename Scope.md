@@ -15,7 +15,7 @@ The program will scrape publicly available job opening data from popular job sea
 * The minimum deliverable (MVP) will include the python application open and available on github
 * A readme.md file will be produced explaining the usage of the application
 * The application itself will produce, at minimum, a human readable list of skills and the corresponding count of those skills for a given job title and geo
-* A graph will be produced to easily visualize the counts for each skill
+* A graph in Jupyter Notebooks will be produced to easily visualize the counts for each skill
 * The application will use pandas dataframes or other methods to identify the most sought after skill in a geographical areas, and by salary
 * For a given skill, the application will use pandas dataframe to get the highest/average salary offered in different geographical areas (states)
 
