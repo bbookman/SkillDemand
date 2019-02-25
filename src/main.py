@@ -197,10 +197,11 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                 print(f'Found skill:{skill}')
                                 skill_dict[skill] += 1
                                 break
-            if site_id == 'indeed':
-                break
-            if site_id == 'careerbuilder':
-                continue
+        if site_id == 'indeed':
+            break
+    if site_id == 'indeed':
+        break
+
     return skill_dict
 
 results = dict()
@@ -250,3 +251,5 @@ get_bodies(site_id, site_url_template, 'software quality assurance engineer', ti
 
 
 '''
+
+print('DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
