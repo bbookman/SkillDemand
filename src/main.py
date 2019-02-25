@@ -127,10 +127,12 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     browser = _start_driver()
     new_tab = _start_driver()
     job_title = _build_job_title(title, title_separator)
-
+    loop_count = 0 #todo remove
     for page in range(1,7):
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
+            loop_count+=1
+            print(f'THIS LOOPED {loop_count}')
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page={page}'
@@ -197,11 +199,10 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                 print(f'Found skill:{skill}')
                                 skill_dict[skill] += 1
                                 break
+            if site_id == 'indeed':
+                    break
         if site_id == 'indeed':
             break
-    if site_id == 'indeed':
-        break
-
     return skill_dict
 
 results = dict()
@@ -219,18 +220,21 @@ skilllist = SKILL_KEYWORDS_QA
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50000', '75000', '100000', '150000', '200000']
+salaries = ['50000', ]# '75000',  '100000', '150000', '200000'] #todo change
 title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 zips = SF_ZIPS
 
-for loc in geo:
-    for salary in salaries:
-        for zip in zips:
-            zcode[zip] = skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60')
-        income[salary] = zcode
-    location[geo] = income
+
+print(f'THIS GEO {geo} ')
+for salary in salaries:
+    print(f'THIS SALARY {salary} ')
+    for zip in zips:
+        print(f'THIS ZIP {zip}')
+        zcode[zip] = skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60')
+    income[salary] = zcode
+location[geo] = income
 results[jobtitle] = location
 
 with open('indeedRESULTS.txt', 'w') as file:
