@@ -151,7 +151,8 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 for title_index in range(26):
                     try:
                         if site_id == 'indeed':
-                            if site_id == 'careerbuilder':
+                            job_links = browser.find_elements_by_class_name(title_selector)
+                        if site_id == 'careerbuilder':
                             job_links = list()
                             job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     except NoSuchElementException:
@@ -223,13 +224,20 @@ for skill in skills:
 
 for salary in salaries:
     income.setdefault(salary, list())
-for code in zip_codes:
+for code in zips:
     zcode.setdefault(code, dict())
 
 get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zips, title_dict, threshold, skills, radius='60', age='60')
 
 
 
+
+
+with open('indeedRESULTS.txt', 'w') as file:
+    file.write(i)
+
+
+'''
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -242,3 +250,4 @@ get_bodies(site_id, site_url_template, 'software quality assurance engineer', ti
 
 
 
+'''
