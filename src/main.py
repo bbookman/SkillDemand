@@ -205,11 +205,13 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             break
     return skill_dict
 
+
+
+
 results = dict()
 location = dict()
 income = dict()
 zcode = dict()
-
 
 geo = 'San Francisco Bay Area'
 
@@ -220,40 +222,59 @@ skilllist = SKILL_KEYWORDS_QA
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50000', ]# '75000',  '100000', '150000', '200000'] #todo change
+salaries = ['50000', '75000',  '100000', '150000', '200000']
 title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 zips = SF_ZIPS
 
-
+'''
 print(f'THIS GEO {geo} ')
 for salary in salaries:
     print(f'THIS SALARY {salary} ')
     for zip in zips:
         print(f'THIS ZIP {zip}')
-        zcode[zip] = skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60')
+        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
+                                  skilllist, title_dict, threshold, radius='30', age='60')
+        zcode[zip] = skill_counts
     income[salary] = zcode
 location[geo] = income
 results[jobtitle] = location
 
 with open('indeedRESULTS.txt', 'w') as file:
     file.write(str(results))
-
-
 '''
+
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
 salaries = ['50', '75', '100', '150', '200']
-title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
-threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
-geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zips, title_dict, threshold, skills, radius='60', age = '60')
+zips = SF_ZIPS
+
+print(f'THIS GEO {geo} ')
+for salary in salaries:
+    print(f'THIS SALARY {salary} ')
+    for zip in zips:
+        print(f'THIS ZIP {zip}')
+        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
+                                  skilllist, title_dict, threshold, radius='30', age='60')
+        zcode[zip] = skill_counts
+    salary = salary + '000'
+    income[salary] = zcode
+location[geo] = income
+results[jobtitle] = location
+
+with open('cbRESULTS.txt', 'w') as file:
+    file.write(str(results))
 
 
 
-'''
+
+
+
+
+
+
 
 print('DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
