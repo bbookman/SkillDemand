@@ -1,7 +1,7 @@
 SUPERFLOUS_STRINGS = ['senior', 'director', 'manager', 'lead', 'mobile', 'sr', 'jr', 'I', 'II', 'III', 'IV','V' ,'(', ')', '.', ',', '/', '\\', "\'", '\"', '-',]
 
 
-SKILL_KEYWORDS =['bash', 'python', 'java', 'c++', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
+SKILL_KEYWORDS_QA =['bash', 'python', 'java', 'c++', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
                  'php', 'Sauce Labs', 'flask', 'shell', 'Telecom', 'NAS', 'SAN', 'iSCSI', 'scripts', 'scripting',
                  'junit', 'selenium', 'react', 'c#', 'TestRail', 'Confluence', 'JMeter',
                 'tableau', 'd3.js', 'sas', 'spss', 'd3', 'saas', 'pandas', 'numpy', 'Jenkins', 'scipy', 'plan', 'case',
