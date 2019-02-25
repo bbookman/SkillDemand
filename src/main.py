@@ -214,10 +214,9 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                 income[salary] = skill_dict
                                 zcode[zip] = income
                                 results[geo] = zcode
-                                import pdb; pdb.set_trace()
                                 break
                             if site_id == 'careerbuilder':
-                                income[salary].append(body)
+                                income[salary] = skill_dict
                                 continue
 
                     if site_id == 'indeed':
