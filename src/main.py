@@ -103,7 +103,7 @@ def remove_superflous(string_list, superflous_strings):
     pass
 
 
-def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salaries, geo, zip_codes, title_dict, threshold, skills, radius='30', age='60'):
+def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60'):
     """
 
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -121,92 +121,98 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     UPDATES the global skills_dict
 
     """
-    global skill_dict
-
-
+    skill_dict = dict()
+    for skill in skilllist:
+        skill_dict.setdefault(skill, 0)
     browser = _start_driver()
     new_tab = _start_driver()
     job_title = _build_job_title(title, title_separator)
-    logging.info(f'title:{job_title}')
-    print(f'title:{job_title.upper()}')
+
     for page in range(1,7):
+        if site_id == 'indeed':
+            url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
         if site_id == 'careerbuilder':
-            print("----------------------------------------------")
-            print(f'Page:{page}')
-            print("----------------------------------------------")
-        for zip in zip_codes:
-            print(f'zip:{zip}')
-            logging.info(f'zip:{zip}')
-            for salary in salaries:
-                print(f'salary: {salary}')
-                logging.info(f'salary: {salary}')
+            url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
+            url += f'page={page}'
+        browser.get(url)
+        logging.info(f'get: {url}')
+        print("----------------------------------------------")
+        print(f'title:{job_title.upper()}')
+        print(f'Page:{page}')
+        print(f'salary: {salary}')
+        print(f'zip:{zip}')
+        print(f'URL: {url}')
+        print("----------------------------------------------")
+        logging.info("----------------------------------------------")
+        logging.info(f'title:{job_title}')
+        logging.info(f'Page:{page}')
+        logging.info(f'salary: {salary}')
+        logging.info(f'zip:{zip}')
+        logging.info(f'URL: {url}')
+        logging.info("----------------------------------------------")
+
+        for title_index in range(26):
+            try:
                 if site_id == 'indeed':
-                    url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
+                    job_links = browser.find_elements_by_class_name(title_selector)
                 if site_id == 'careerbuilder':
-                    url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
-                    url += f'page={page}'
-                browser.get(url)
-                logging.info(f'get: {url}')
+                    job_links = list()
+                    job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
+            except NoSuchElementException:
+                element = title_selector.format(title_index)
+                logging.info(f'NoSuchElementException: {element}')
+                print(f'NoSuchElementException: {element}')
+                continue
 
-                for title_index in range(26):
-                    try:
-                        if site_id == 'indeed':
-                            job_links = browser.find_elements_by_class_name(title_selector)
-                        if site_id == 'careerbuilder':
-                            job_links = list()
-                            job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
-                    except NoSuchElementException:
-                        element = title_selector.format(title_index)
-                        logging.info(f'NoSuchElementException: {element}')
-                        print(f'NoSuchElementException: {element}')
-                        continue
-
-                    jtitles = [link.text for link in job_links]
-                    hrefs = [link.get_attribute('href') for link in job_links]
-
-                    for index, t in enumerate(jtitles):
-                        print(f'Checking: {title}')
-                        logging.info(f'Checking: {t}')
-                        t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
-                        t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
-                        evaluate = t.split()
-                        match = 0
-                        for word in evaluate:
-                            for keyword, value in title_dict.items():
-                                if keyword.lower() == word.lower():
-                                    match += value
-                                    logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
-                        if match < threshold:
-                            print(f'THRESHOLD NOT MET: {t}')
-                            logging.info(f'THRESHOLD NOT MET: {t}')
-                            continue
-                        else:
-                            print(f'MET THRESHOLD: {t}')
-                            logging.info(f'MET THRESHOLD: {t}')
-                            job_description_url = hrefs[index]
-                            new_tab.get(job_description_url )
-                            body = new_tab.find_element_by_tag_name('body').text
-                            sbody = body.split()
-                            for skill in skills:
-                                for word in sbody:
-                                    logging.debug(f'Check skill:{skill} == word:{word}')
-                                    if skill.lower() == word.lower():
-                                        logging.info(f'Found skill:{skill}')
-                                        print(f'Found skill:{skill}')
-                                        skill_dict[skill] += 1
-                                        break
-                            if site_id == 'indeed':
+            jtitles = [link.text for link in job_links]
+            hrefs = [link.get_attribute('href') for link in job_links]
+            for index, t in enumerate(jtitles):
+                print(f'Checking: {title}')
+                logging.info(f'Checking: {t}')
+                t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
+                t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
+                evaluate = t.split()
+                match = 0
+                for word in evaluate:
+                    for keyword, value in title_dict.items():
+                        if keyword.lower() == word.lower():
+                            match += value
+                            logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
+                if match < threshold:
+                    print(f'THRESHOLD NOT MET: {t}')
+                    logging.info(f'THRESHOLD NOT MET: {t}')
+                    continue
+                else:
+                    print(f'MET THRESHOLD: {t}')
+                    logging.info(f'MET THRESHOLD: {t}')
+                    job_description_url = hrefs[index]
+                    new_tab.get(job_description_url )
+                    body = new_tab.find_element_by_tag_name('body').text
+                    sbody = body.split()
+                    for skill in skilllist:
+                        for word in sbody:
+                            logging.debug(f'Check skill:{skill} == word:{word}')
+                            if skill.lower() == word.lower():
+                                logging.info(f'Found skill:{skill}')
+                                print(f'Found skill:{skill}')
+                                skill_dict[skill] += 1
                                 break
-                            if site_id == 'careerbuilder':
-                                continue
-                    if site_id == 'indeed':
-                        break
+            if site_id == 'indeed':
+                break
+            if site_id == 'careerbuilder':
+                continue
+    return skill_dict
 
 results = dict()
+location = dict()
 income = dict()
 zcode = dict()
-skill_dict = dict()
 
+
+geo = 'San Francisco Bay Area'
+
+jobtitle = 'software quality assurance engineer'
+skilllist = SKILL_KEYWORDS_QA
 
 
 site_id = 'indeed'
@@ -216,25 +222,18 @@ salaries = ['50000', '75000', '100000', '150000', '200000']
 title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
-geo = 'San Francisco Bay Area'
-skills = SKILL_KEYWORDS_QA
 zips = SF_ZIPS
-for skill in skills:
-    skill_dict.setdefault(skill, 0)
 
-for salary in salaries:
-    income.setdefault(salary, list())
-for code in zips:
-    zcode.setdefault(code, dict())
-
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zips, title_dict, threshold, skills, radius='60', age='60')
-
-
-
-
+for loc in geo:
+    for salary in salaries:
+        for zip in zips:
+            zcode[zip] = skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60')
+        income[salary] = zcode
+    location[geo] = income
+results[jobtitle] = location
 
 with open('indeedRESULTS.txt', 'w') as file:
-    file.write(i)
+    file.write(str(results))
 
 
 '''
