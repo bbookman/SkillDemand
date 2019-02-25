@@ -44,6 +44,7 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
         cbtitle = _build_job_title(title, '-')
+        title = _build_job_title(title, '+')
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age, cbtitle = cbtitle)
 
 def _build_job_title(title, title_separator):
@@ -165,7 +166,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     job_title = _build_job_title(title, title_separator)
     logging.info(f'title:{job_title}')
     print(f'title:{job_title.upper()}')
-    for page in range(4):  #todo change
+    for page in range(1,7):
         if site_id == 'careerbuilder':
             print("----------------------------------------------")
             print(f'Page:{page}')
@@ -182,9 +183,6 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 if site_id == 'careerbuilder':
                     url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
                     url += f'page={page}'
-                    if salary == '75':
-                        import pdb; pdb.set_trace()
-                        # !!!!!!!!!!!!!!!!!!!!! GETTING THE WRONG TITLE!!!!!!!!!!!!!!!!! todo
                 browser.get(url)
                 logging.info(f'get: {url}')
 
@@ -208,7 +206,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                         print(f'Checking: {title}')
                         logging.info(f'Checking: {t}')
                         t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
-                        t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)  #(?<=[A-z])[\&\-\\]+(?=[A-z])
+                        t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                         evaluate = t.split()
                         match = 0
                         for word in evaluate:
