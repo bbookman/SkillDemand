@@ -230,7 +230,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     logging.info(results)
     return results
 
-
+'''
 
 skills = SKILL_KEYWORDS_QA
 site_id = 'careerbuilder'
@@ -241,10 +241,10 @@ title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 9
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='60')
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='60', age = '60')
 
 '''
-
+skills = SKILL_KEYWORDS_QA
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -253,5 +253,4 @@ title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 9
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, radius='30', age='60')
-'''
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='30', age='60')
