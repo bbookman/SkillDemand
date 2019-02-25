@@ -18,7 +18,7 @@ logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_stri
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def start_driver():
+def _start_driver():
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
@@ -118,27 +118,14 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     :param threshold: int.  the weight threshold
     :param radius: string, search radius for each zip.  defaults to 30
     :param age: string, how old can the job postings be. defaults to 60
-    :return: results dictionary with data model:
-
-        [Geo]
-           [Zip]
-            [Salary]
-                [Skill dictionary]
-
-         ['San Francisco': ['95054' : ['50000': ['Java': 40, 'python': 24, 'pandas': 15] ] ]
+    UPDATES the global skills_dict
 
     """
+    global skill_dict
 
-    results = dict()
-    income = dict()
-    zcode = dict()
-    skill_dict = dict()
-    for salary in salaries:
-        income.setdefault(salary, list())
-    for code in zip_codes:
-        zcode.setdefault(code, dict())
-    browser = start_driver()
-    new_tab = start_driver()
+
+    browser = _start_driver()
+    new_tab = _start_driver()
     job_title = _build_job_title(title, title_separator)
     logging.info(f'title:{job_title}')
     print(f'title:{job_title.upper()}')
@@ -151,8 +138,6 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             print(f'zip:{zip}')
             logging.info(f'zip:{zip}')
             for salary in salaries:
-                for skill in skills:
-                    skill_dict.setdefault(skill, 0)
                 print(f'salary: {salary}')
                 logging.info(f'salary: {salary}')
                 if site_id == 'indeed':
@@ -166,8 +151,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 for title_index in range(26):
                     try:
                         if site_id == 'indeed':
-                            job_links = browser.find_elements_by_class_name(title_selector)
-                        if site_id == 'careerbuilder':
+                            if site_id == 'careerbuilder':
                             job_links = list()
                             job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     except NoSuchElementException:
@@ -208,43 +192,22 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                     if skill.lower() == word.lower():
                                         logging.info(f'Found skill:{skill}')
                                         print(f'Found skill:{skill}')
-                                        skill_dict[skill]+=1
+                                        skill_dict[skill] += 1
                                         break
                             if site_id == 'indeed':
-                                income[salary] = skill_dict
-                                zcode[zip] = income
-                                results[geo] = zcode
                                 break
                             if site_id == 'careerbuilder':
-                                income[salary] = skill_dict
                                 continue
-
                     if site_id == 'indeed':
                         break
 
-                zcode[zip] = income
-                results[geo] = zcode
+results = dict()
+income = dict()
+zcode = dict()
+skill_dict = dict()
 
 
-    logging.info('=====================================================')
-    logging.info(results)
-    return results
 
-'''
-
-skills = SKILL_KEYWORDS_QA
-site_id = 'careerbuilder'
-title_separator = SITES_DICT[site_id]['title_word_sep']
-title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50', '75', '100', '150', '200']
-title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
-threshold = 90
-site_url_template = SITES_DICT[site_id]['url_template']
-geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='60', age = '60')
-
-'''
-skills = SKILL_KEYWORDS_QA
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -253,4 +216,29 @@ title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 9
 threshold = 90
 site_url_template = SITES_DICT[site_id]['url_template']
 geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, SF_ZIPS, title_dict, threshold, skills, radius='30', age='60')
+skills = SKILL_KEYWORDS_QA
+zips = SF_ZIPS
+for skill in skills:
+    skill_dict.setdefault(skill, 0)
+
+for salary in salaries:
+    income.setdefault(salary, list())
+for code in zip_codes:
+    zcode.setdefault(code, dict())
+
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zips, title_dict, threshold, skills, radius='60', age='60')
+
+
+
+site_id = 'careerbuilder'
+title_separator = SITES_DICT[site_id]['title_word_sep']
+title_selector = SITES_DICT[site_id]['title_selector']
+salaries = ['50', '75', '100', '150', '200']
+title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+threshold = 90
+site_url_template = SITES_DICT[site_id]['url_template']
+geo = 'San Francisco Bay Area'
+get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zips, title_dict, threshold, skills, radius='60', age = '60')
+
+
+
