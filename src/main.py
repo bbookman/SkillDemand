@@ -3,6 +3,7 @@ import ssl
 import re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+import copy
 
 from selenium.common.exceptions import StaleElementReferenceException
 #from nltk.tokenize import sent_tokenize, word_tokenize
@@ -127,17 +128,13 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     browser = _start_driver()
     new_tab = _start_driver()
     job_title = _build_job_title(title, title_separator)
-    loop_count = 0 #todo remove
-    for page in range(1,7):
+    for page in range(1):
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
-            loop_count+=1
-            print(f'THIS LOOPED {loop_count}')
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
-            url += f'page={page}'
+            url += f'page_number={page}'
         browser.get(url)
-        logging.info(f'get: {url}')
         print("----------------------------------------------")
         print(f'title:{job_title.upper()}')
         print(f'Page:{page}')
@@ -205,24 +202,26 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             break
     return skill_dict
 
+
+
+
 results = dict()
 location = dict()
 income = dict()
-zcode = dict()
-
-
 geo = 'San Francisco Bay Area'
+results.setdefault(geo, 'San Francisco Bay Area')
 
 jobtitle = 'software quality assurance engineer'
 skilllist = SKILL_KEYWORDS_QA
+title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+threshold = 90
 
-
+'''
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50000', ]# '75000',  '100000', '150000', '200000'] #todo change
-title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
-threshold = 90
+salaries = ['50000', '100000', '150000']
+
 site_url_template = SITES_DICT[site_id]['url_template']
 zips = SF_ZIPS
 
@@ -232,28 +231,56 @@ for salary in salaries:
     print(f'THIS SALARY {salary} ')
     for zip in zips:
         print(f'THIS ZIP {zip}')
-        zcode[zip] = skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60')
+        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
+                                  skilllist, title_dict, threshold, radius='30', age='60')
+        zcode[zip] = skill_counts
     income[salary] = zcode
 location[geo] = income
 results[jobtitle] = location
 
 with open('indeedRESULTS.txt', 'w') as file:
     file.write(str(results))
-
-
 '''
+
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50', '75', '100', '150', '200']
-title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
-threshold = 90
+salaries = ['50', '100', '150']
 site_url_template = SITES_DICT[site_id]['url_template']
-geo = 'San Francisco Bay Area'
-get_bodies(site_id, site_url_template, 'software quality assurance engineer', title_separator, title_selector, salaries,geo, zips, title_dict, threshold, skills, radius='60', age = '60')
+zips = SF_ZIPS
+
+print(f'THIS GEO {geo} ')
+for salary in salaries:
+    print(f'THIS SALARY {salary} ')
+    zcode = dict()
+    for zip in zips:
+       # if zip in zcode:
+        #    import pdb; pdb.set_trace()
+        print(f'THIS ZIP {zip}')
+        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
+                                  skilllist, title_dict, threshold, radius='30', age='60')
+        #remove zeros
+        cp = copy.deepcopy(skill_counts)
+        for k, v in cp.items():
+            if v == 0:
+                skill_counts.pop(k)
+        zcode[zip] = skill_counts
+    income[salary] = zcode
+location[geo] = income
+logging.info(f'location:{location}')
+results[jobtitle] = location
 
 
 
-'''
+
+with open('cbRESULTS.txt', 'w') as file:
+    file.write(str(results))
+
+
+
+
+
+
+
 
 print('DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
