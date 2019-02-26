@@ -128,7 +128,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     browser = _start_driver()
     new_tab = _start_driver()
     job_title = _build_job_title(title, title_separator)
-    for page in range(1):
+    for page in range(1, 5):
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
         if site_id == 'careerbuilder':
@@ -254,8 +254,6 @@ for salary in salaries:
     print(f'THIS SALARY {salary} ')
     zcode = dict()
     for zip in zips:
-       # if zip in zcode:
-        #    import pdb; pdb.set_trace()
         print(f'THIS ZIP {zip}')
         skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
                                   skilllist, title_dict, threshold, radius='30', age='60')
@@ -265,6 +263,7 @@ for salary in salaries:
             if v == 0:
                 skill_counts.pop(k)
         zcode[zip] = skill_counts
+    salary = salary + '000'
     income[salary] = zcode
 location[geo] = income
 logging.info(f'location:{location}')
