@@ -4,9 +4,6 @@ import re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 import copy
-
-from selenium.common.exceptions import StaleElementReferenceException
-#from nltk.tokenize import sent_tokenize, word_tokenize
 import logging
 from constants import *
 
@@ -58,49 +55,6 @@ def _build_job_title(title, title_separator):
     for word in words:
         result+= word + title_separator
     return result[:-1]
-
-
-def remove_stop_words(list_of_texts):
-    """ Removes English stop words from the body of job description
-    use:
-
-        https://pythonspot.com/tokenizing-words-and-sentences-with-nltk/
-        https://pythonspot.com/nltk-stop-words/
-
-    bodies: type = list of strings
-
-    returns: list of SINGLE WORD strings with stop words removed
-    """
-    pass
-
-def remove_html_from_bodies(bodies):
-    """ Removes html tags from body of job description
-
-    possibly use:
-        https://tutorialedge.net/python/removing-html-from-string/
-        https://rushter.com/blog/python-fast-html-parser/
-        https://community.esri.com/thread/207202-how-to-use-beautiful-soup-to-remove-html-tags-from-arcgis-metadata
-        https://www.dotnetperls.com/remove-html-tags-python
-        https://www.laurivan.com/strip-html-tags-in-python/
-        https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
-        https://bytes.com/topic/python/answers/33816-easy-way-remove-html-entities-html-document
-
-    bodies: type = list of strings
-    return: list of SINGLE WORD strings with as much html and javascript removed as possible
-    """
-    pass
-
-
-def remove_superflous(string_list, superflous_strings):
-    """ Removes unnecessary strings such as "director" and "manager"
-    Because "director of software engineering" is more or less the same as "manager of software engineering"
-
-    string_list: type = list, strings to filter
-    superflous_strings: type = list, strings to remove
-
-    returns list of strings
-    """
-    pass
 
 
 def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60'):
@@ -277,13 +231,13 @@ location[geo] = income
 logging.info(f'location:{location}')
 results[jobtitle] = location
 
-'''
+
 
 
 with open('cbRESULTS.txt', 'w') as file:
     file.write(str(results))
 
-
+'''
 
 
 
