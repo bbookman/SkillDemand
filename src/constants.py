@@ -1,8 +1,10 @@
-SKILL_KEYWORDS_QA =['bash', 'python', 'java', 'c++', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
+SKILL_KEYWORDS_QA =['python', ] #todo
+'''
+'c++', 'java', 'bash', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
                  'php', 'Sauce Labs', 'flask', 'shell', 'Telecom', 'NAS', 'SAN', 'iSCSI', 'scripts', 'scripting',
                  'junit', 'selenium', 'react', 'c#', 'TestRail', 'Confluence', 'JMeter',
                 'tableau', 'd3.js', 'sas', 'spss', 'd3', 'saas', 'pandas', 'numpy', 'Jenkins', 'scipy', 'plan', 'case',
-                'sps', 'spotfire', 'scikits.learn', 'splunk', 'h2o', 'jira', 'functional', 'integration', 'stress', 'load', 'performance',
+                'sps', 'spotfire', 'scikits.learn', 'splunk', 'h2o', 'jira', 'functional', 'integration', 'stress', 'load','performance',
                 'hadoop', 'mapreduce', 'spark', 'pig', 'hive', 'shark', 'oozie', 'zookeeper', 'flume', 'mahout',
                 'elasticsearch', 'api', 'Mockito', 'Robotium', 'frontend', 'backend',
               'sql', 'nosql', 'hbase', 'cassandra', 'xml', 'rust', 'mongodb', 'mysql', 'mssql', 'postgre', 'oracle',
@@ -12,7 +14,7 @@ SKILL_KEYWORDS_QA =['bash', 'python', 'java', 'c++', 'ruby', 'perl', 'matlab', '
             'restassured', 'ios', 'json', 'swift', 'objective-c', 'groovy', '.net', 'angular', 'node.js', 'kafka', 'mesos',
             'django', 'pytest', 'css', 'html', 'appium', 'linux', 'css', 'ui', 'soa', 'unix', 'RESTful', 'Elastic', 'git',
             'github', 'database', 'acceptance', 'uat', 'healthcare', 'banking']
-
+'''
 
 SITES_DICT = {
 
@@ -21,21 +23,21 @@ SITES_DICT = {
         'title_selector' : 'turnstileLink',
         'title_word_sep': '+',
         'body_selector': 'body',
-        'salaries': ['50000', '100000', '150000'],
+        'salaries': ['150000',]#'100000', '50000'],  #todo
     },
     'careerbuilder' : {
         'url_template' : 'https://www.careerbuilder.com/jobs-{cbtitle}-in-{zipcode}?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}',
         'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
         'title_word_sep': '+',
         'body_selector': 'body',
-        'salaries' :['50', '100', '150'],
+        'salaries' :['150',]# '100', '50'], #todo
 
     },
 }
 
 GEO_ZIPS = {
     'San Francisco Bay Area':
-        [95032, ], #95054, 94010,94536,94539,94402, 94404, 94403,94538, 94560, ],
+        [95032, ], #95054, 94010,94536,94539,94402, 94404, 94403,94538, 94560, ], #todo
 
     #'Austin, Texas': [],
     #'Boston, Mass':[],

@@ -6,11 +6,17 @@ from selenium.common.exceptions import NoSuchElementException
 import copy
 import logging
 from constants import *
+from urllib3.exceptions import NewConnectionError
 
 def make_date_string():
     stamp = datetime.now()
     date_string = stamp.strftime('%Y-%d-%m-%H-%M-%S')
     return date_string
+
+def make_time_string():
+    stamp = datetime.now()
+    time_string = stamp.strftime('%H:%M')
+    return time_string
 
 logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -57,7 +63,7 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_skills(site_id, site_url_template, title, title_separator, title_selector, salary, skilllist, weights, threshold='90', radius='30', age='60'):
+def get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='30', age='60'):
     """
 
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -75,9 +81,8 @@ def get_skills(site_id, site_url_template, title, title_separator, title_selecto
     UPDATES the global skills_dict
 
     """
-    skill_dict = dict()
-    for skill in skilllist:
-        skill_dict.setdefault(skill, 0)
+    for skill in skill_keywords:
+        skill_counts.setdefault(skill, 0)
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
     for page in range(1, 5):
@@ -86,7 +91,15 @@ def get_skills(site_id, site_url_template, title, title_separator, title_selecto
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page_number={page}'
-        browser.get(url)
+        try:
+            browser.get(url)
+        except ConnectionRefusedError as c:
+            print(f'ConnectionRefusedError: {url} \n {c}')
+            logging.info(f'ConnectionRefusedError: {url} \n {c}')
+        except NewConnectionError as n:
+            print(f'NewConnectionError: {url} \n {n}')
+            logging.info(f'NewConnectionError: {url} \n {n}')
+
         print("----------------------------------------------")
         print(f'title:{job_title.upper()}')
         print(f'Page:{page}')
@@ -132,23 +145,29 @@ def get_skills(site_id, site_url_template, title, title_separator, title_selecto
                 if match < threshold:
                     print(f'THRESHOLD NOT MET: {t}')
                     logging.info(f'THRESHOLD NOT MET: {t}')
+                    if t == 'Engineering Team Lead':  #todo
+                        import pdb; pdb.set_trace()
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
                     logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
-                    new_tab.get(job_description_url )
-                    body = new_tab.find_element_by_tag_name('body').text
-                    new_tab.close()
+                    try:
+                        new_tab.get(job_description_url)
+                        body = new_tab.find_element_by_tag_name('body').text
+                        new_tab.close()
+                    except ConnectionRefusedError:
+                        print(f'ConnectionRefusedError: {url}')
+                        logging.info(f'ConnectionRefusedError: {url}')
+                        break
                     sbody = body.split()
-                    for skill in skilllist:
+                    for skill in skill_keywords:
                         for word in sbody:
-                            logging.debug(f'Check skill:{skill} == word:{word}')
                             if skill.lower() == word.lower():
                                 logging.info(f'Found skill:{skill}')
                                 print(f'Found skill:{skill}')
-                                skill_dict[skill] += 1
+                                skill_counts[skill] += 1
                                 break
 
             if site_id == 'indeed':
@@ -157,28 +176,43 @@ def get_skills(site_id, site_url_template, title, title_separator, title_selecto
             break
         browser.close()
         browser.quit()
-    return skill_dict
+    return skill_counts  #maybe NOT ???  #todo
 
 
 
 if __name__ == "__main__":
-    results = dict()
+    start = make_time_string()
+    print(f'START TIME:{start}')
+    logging.info(f'START TIME:{start}')
+    skill_counts = dict()
     for site_id in SITES_DICT.keys():
         title_separator = SITES_DICT[site_id]['title_word_sep']
         title_selector = SITES_DICT[site_id]['title_selector']
         site_url_template = SITES_DICT[site_id]['url_template']
         for title in TITLES.keys():
+            skill_keywords = TITLES[title][1]
+            weights = TITLES[title][0]
+
             for geo in GEO_ZIPS.keys():
                 for salary in SITES_DICT[site_id]['salaries']:
                     for zip in GEO_ZIPS[geo]:
-                        #print(f'site-id:{site_id}, title:{title}, geo:{geo}, salary:{salary}, zip:{zip}')
-
+                        zip = str(zip)
+                        temp = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+        print(f'site_id:{site_id} \n  {temp}')
+        logging.info(f'site_id:{site_id} \n  {temp}')
+    end = make_time_string()
+    print(f'END TIME:{end}')
+    logging.info(f'END TIME:{end}')
 
 
 
 
 
 '''
+    skill_counts = dict()
+    for skill in skilllist:
+        skill_counts.setdefault(skill, 0)
+
 
 results = dict()
 location = dict()
@@ -260,5 +294,3 @@ with open('cbRESULTS.txt', 'w') as file:
 
 
 
-
-print('DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
