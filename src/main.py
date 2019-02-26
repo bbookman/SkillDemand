@@ -57,7 +57,7 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60'):
+def get_skills(site_id, site_url_template, title, title_separator, title_selector, salary, skilllist, weights, threshold='90', radius='30', age='60'):
     """
 
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -68,7 +68,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     :param salaries: list, a list of strings for salary query.  example: ['50000', '100000', '200000']
     :param geo: string, nice name of geographic location.  example "San Francisco", "Austin, Texas"
     :param zip_codes: list of strings.  zip codes for the geo.  can be retrieved from https://catalog.data.gov/dataset/bay-area-zip-codes
-    :param title_dict: dictionary of keyword and value pairs.  keywords are those desired in the title.  values are the weights (see threshold)
+    :param weights: dictionary of keyword and value pairs.  keywords are those desired in the title.  values are the weights (see threshold)
     :param threshold: int.  the weight threshold
     :param radius: string, search radius for each zip.  defaults to 30
     :param age: string, how old can the job postings be. defaults to 60
@@ -125,7 +125,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                 evaluate = t.split()
                 match = 0
                 for word in evaluate:
-                    for keyword, value in title_dict.items():
+                    for keyword, value in weights.items():
                         if keyword.lower() == word.lower():
                             match += value
                             logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
@@ -161,16 +161,34 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 
 
 
+if __name__ == "__main__":
+    results = dict()
+    for site_id in SITES_DICT.keys():
+        title_separator = SITES_DICT[site_id]['title_word_sep']
+        title_selector = SITES_DICT[site_id]['title_selector']
+        site_url_template = SITES_DICT[site_id]['url_template']
+        for title in TITLES.keys():
+            for geo in GEO_ZIPS.keys():
+                for salary in SITES_DICT[site_id]['salaries']:
+                    for zip in GEO_ZIPS[geo]:
+                        #print(f'site-id:{site_id}, title:{title}, geo:{geo}, salary:{salary}, zip:{zip}')
+
+
+
+
+
+
+'''
 
 results = dict()
 location = dict()
 income = dict()
 geo = 'San Francisco Bay Area'
 results.setdefault(geo, 'San Francisco Bay Area')
-
 jobtitle = 'software quality assurance engineer'
-skilllist = SKILL_KEYWORDS_QA
-title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
+
+skilllist = TITLES['software quality assurance engineer'][1]
+title_dict = TITLES['software quality assurance engineer'][0]
 threshold = 90
 
 site_id = 'indeed'
@@ -179,7 +197,7 @@ title_selector = SITES_DICT[site_id]['title_selector']
 salaries = ['50000', '100000', '150000']
 
 site_url_template = SITES_DICT[site_id]['url_template']
-zips = SF_ZIPS
+zips = GEO_ZIPS['San Francisco Bay Area']
 
 
 for salary in salaries:
@@ -200,10 +218,9 @@ income[salary] = zcode
 location[geo] = income
 results[jobtitle] = location
 
-with open('indeedRESULTS.txt', 'w') as file:
-    file.write(str(results))
+#with open('indeedRESULTS.txt', 'w') as file:
+#    file.write(str(results))
 
-'''
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
