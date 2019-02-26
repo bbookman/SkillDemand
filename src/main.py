@@ -3,6 +3,7 @@ import ssl
 import re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+import copy
 
 from selenium.common.exceptions import StaleElementReferenceException
 #from nltk.tokenize import sent_tokenize, word_tokenize
@@ -207,8 +208,6 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
 results = dict()
 location = dict()
 income = dict()
-
-
 geo = 'San Francisco Bay Area'
 results.setdefault(geo, 'San Francisco Bay Area')
 
@@ -260,28 +259,23 @@ for salary in salaries:
         print(f'THIS ZIP {zip}')
         skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
                                   skilllist, title_dict, threshold, radius='30', age='60')
+        #remove zeros
+        cp = copy.deepcopy(skill_counts)
+        for k, v in cp.items():
+            if v == 0:
+                skill_counts.pop(k)
         zcode[zip] = skill_counts
     income[salary] = zcode
 location[geo] = income
 logging.info(f'location:{location}')
 results[jobtitle] = location
 
+
+
+
 with open('cbRESULTS.txt', 'w') as file:
     file.write(str(results))
 
-
-'''
-{'software quality assurance engineer': {'San Francisco Bay Area': 
-
-['Title']:
-    ['Geo']:
-        ['Salary']
-            ['Zip']
-                ['Skill']:count
-            ['Zip]
-                 ['Skill']:count
-                
-'''
 
 
 
