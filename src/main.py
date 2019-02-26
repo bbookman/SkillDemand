@@ -145,8 +145,6 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 if match < threshold:
                     print(f'THRESHOLD NOT MET: {t}')
                     logging.info(f'THRESHOLD NOT MET: {t}')
-                    if t == 'Engineering Team Lead':  #todo
-                        import pdb; pdb.set_trace()
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
@@ -174,8 +172,8 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     break
         if site_id == 'indeed':
             break
-        browser.close()
-        browser.quit()
+       # browser.close()
+       # browser.quit()
     return skill_counts  #maybe NOT ???  #todo
 
 
@@ -198,6 +196,10 @@ if __name__ == "__main__":
                     for zip in GEO_ZIPS[geo]:
                         zip = str(zip)
                         temp = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+                        cp = copy.deepcopy(temp)
+                        for k, v in cp.items():
+                            if v == 0:
+                                temp.pop(k)
         print(f'site_id:{site_id} \n  {temp}')
         logging.info(f'site_id:{site_id} \n  {temp}')
     end = make_time_string()
