@@ -20,12 +20,11 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def _start_driver():
-
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('window-size=1920x1080')
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
     return driver
 
 
@@ -126,7 +125,6 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     for skill in skilllist:
         skill_dict.setdefault(skill, 0)
     browser = _start_driver()
-    new_tab = _start_driver()
     job_title = _build_job_title(title, title_separator)
     for page in range(1, 5):
         if site_id == 'indeed':
@@ -185,8 +183,10 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                     print(f'MET THRESHOLD: {t}')
                     logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
+                    new_tab = _start_driver()
                     new_tab.get(job_description_url )
                     body = new_tab.find_element_by_tag_name('body').text
+                    new_tab.close()
                     sbody = body.split()
                     for skill in skilllist:
                         for word in sbody:
@@ -196,10 +196,13 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                                 print(f'Found skill:{skill}')
                                 skill_dict[skill] += 1
                                 break
+
             if site_id == 'indeed':
                     break
         if site_id == 'indeed':
             break
+        browser.close()
+        browser.quit()
     return skill_dict
 
 
@@ -216,7 +219,6 @@ skilllist = SKILL_KEYWORDS_QA
 title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
 threshold = 90
 
-'''
 site_id = 'indeed'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -226,22 +228,28 @@ site_url_template = SITES_DICT[site_id]['url_template']
 zips = SF_ZIPS
 
 
-print(f'THIS GEO {geo} ')
 for salary in salaries:
+    print(f'THIS SALARY {salary} ')
+    zcode = dict()
     print(f'THIS SALARY {salary} ')
     for zip in zips:
         print(f'THIS ZIP {zip}')
         skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
                                   skilllist, title_dict, threshold, radius='30', age='60')
+        # remove zeros
+        cp = copy.deepcopy(skill_counts)
+        for k, v in cp.items():
+            if v == 0:
+                skill_counts.pop(k)
         zcode[zip] = skill_counts
-    income[salary] = zcode
+income[salary] = zcode
 location[geo] = income
 results[jobtitle] = location
 
 with open('indeedRESULTS.txt', 'w') as file:
     file.write(str(results))
-'''
 
+'''
 site_id = 'careerbuilder'
 title_separator = SITES_DICT[site_id]['title_word_sep']
 title_selector = SITES_DICT[site_id]['title_selector']
@@ -269,7 +277,7 @@ location[geo] = income
 logging.info(f'location:{location}')
 results[jobtitle] = location
 
-
+'''
 
 
 with open('cbRESULTS.txt', 'w') as file:
