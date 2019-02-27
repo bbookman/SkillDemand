@@ -46,7 +46,7 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
 
     returns an url string
     """
-    if site_id == 'indeed' or site_id =='ziprecruiter':
+    if site_id == 'indeed' or site_id =='ziprecruiter' or site_id == 'stackoverflow':
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
         cbtitle = _build_job_title(title, '-')
@@ -97,6 +97,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         if site_id == 'ziprecruiter':
             url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
             url += f'page={page}'
+        if site_id == 'stackoverflow':
+            url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
+            url += f'pg={page}'
         try:
             browser.get(url)
         except ConnectionRefusedError as c:
@@ -126,7 +129,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         for title_index in range(1,26):
             job_links = list()
             try:
-                if site_id == 'indeed':
+                if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
@@ -134,7 +137,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
-                if site_id == 'ziprecruiter':
+                if site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     job_links = [a for a in browser.find_elements_by_tag_name('a') if title_selector in a.get_attribute('class')]
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]

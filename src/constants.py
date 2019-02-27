@@ -15,9 +15,9 @@ SKILL_KEYWORDS_QA =['python', 'c++', 'java', 'bash','ruby', 'perl', 'matlab', 'j
 
 
 SITES_DICT = {
-    'ziprecruiter': {
-        'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
-        'title_selector': 'job_link',
+    'stackoverflow': {
+        'url_template': 'https://stackoverflow.com/jobs?q={title}&l={zipcode}&d={radius}&u=Miles&s={salary}&c=USD&',
+        'title_selector': 's-link',
         'title_word_sep': '+',
         'salaries': ['150000', '100000', ]  # '50000'] #todo
 
@@ -47,7 +47,13 @@ TITLES = {
 
 '''
 
+ 'ziprecruiter': {
+        'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
+        'title_selector': 'job_link',
+        'title_word_sep': '+',
+        'salaries': ['150000', '100000', ]  # '50000'] #todo
 
+    },
 
 
 
