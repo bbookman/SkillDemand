@@ -1,4 +1,4 @@
-SKILL_KEYWORDS_QA =['python', 'c++', 'java', 'bash', 'ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
+SKILL_KEYWORDS_QA =['python', 'c++', 'java', 'bash','ruby', 'perl', 'matlab', 'javascript', 'scala', 'firmware',
                  'php', 'Sauce Labs', 'flask', 'shell', 'Telecom', 'NAS', 'iSCSI', 'scripts', 'scripting',
                  'junit', 'selenium', 'react', 'c#', 'TestRail', 'Confluence', 'JMeter',
                 'tableau', 'd3.js', 'sas', 'spss', 'd3', 'saas', 'pandas', 'numpy', 'Jenkins', 'scipy', 'plan', 'case',
@@ -21,7 +21,8 @@ SITES_DICT = {
         'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
         'title_word_sep': '+',
         'body_selector': 'body',
-        'salaries' :['150','100', '50']
+        'salaries':['150','100', ]#'50'] #todo
+
 
     },
 
@@ -30,18 +31,15 @@ SITES_DICT = {
         'title_selector': 'turnstileLink',
         'title_word_sep': '+',
         'body_selector': 'body',
-        'salaries': ['150000', ]  # '100000', '50000'],  #todo
+        'salaries': ['150000',  '100000']#, '50000'], todo
     },
 
 }
 
 GEO_ZIPS = {
     'San Francisco Bay Area':
-        [95032, 95054, 94010, 94536, 94539, 94402, 94404,
-         94403, 94538, 94560, 94065, 94063, 94027, 94002,
-         94070, 95134, 95002, 94062, 94089, 94301, 94025, 94303,
-         95035, 95140, 94061, 94043, 94304, 94305, 94035, 94306, 94028, 94040, 94022, 94085, 94086,
-         94024, 94087]
+        [95032,95054, 94010, ]}  # todo
+
 
     #'Austin, Texas': [],
     #'Boston, Mass':[],
@@ -49,7 +47,7 @@ GEO_ZIPS = {
     #'Seattle, WA':[],
 
 
-}
+
 
 TITLES = {
     'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20},
@@ -58,3 +56,10 @@ TITLES = {
 
 }
 
+'''
+94536, 94539, 94402, 94404, 95054, 94010, 94536, 94539, 94402, 94404,
+94403, 94538, 94560, 94065, 94063, 94027, 94002,
+94070, 95134, 95002, 94062, 94089, 94301, 94025, 94303,
+95035, 95140, 94061, 94043, 94304, 94305, 94035, 94306, 94028, 94040, 94022, 94085, 94086,
+94024, 94087]
+'''
