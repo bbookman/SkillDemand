@@ -6,11 +6,17 @@ from selenium.common.exceptions import NoSuchElementException
 import copy
 import logging
 from constants import *
+from urllib3.exceptions import NewConnectionError
 
 def make_date_string():
     stamp = datetime.now()
     date_string = stamp.strftime('%Y-%d-%m-%H-%M-%S')
     return date_string
+
+def make_time_string():
+    stamp = datetime.now()
+    time_string = stamp.strftime('%H:%M')
+    return time_string
 
 logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -57,7 +63,7 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_bodies(site_id, site_url_template, title, title_separator, title_selector, salary, skilllist, title_dict, threshold, radius='30', age='60'):
+def get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='30', age='60'):
     """
 
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -68,16 +74,15 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
     :param salaries: list, a list of strings for salary query.  example: ['50000', '100000', '200000']
     :param geo: string, nice name of geographic location.  example "San Francisco", "Austin, Texas"
     :param zip_codes: list of strings.  zip codes for the geo.  can be retrieved from https://catalog.data.gov/dataset/bay-area-zip-codes
-    :param title_dict: dictionary of keyword and value pairs.  keywords are those desired in the title.  values are the weights (see threshold)
+    :param weights: dictionary of keyword and value pairs.  keywords are those desired in the title.  values are the weights (see threshold)
     :param threshold: int.  the weight threshold
     :param radius: string, search radius for each zip.  defaults to 30
     :param age: string, how old can the job postings be. defaults to 60
     UPDATES the global skills_dict
 
     """
-    skill_dict = dict()
-    for skill in skilllist:
-        skill_dict.setdefault(skill, 0)
+    for skill in skill_keywords:
+        skill_counts.setdefault(skill, 0)
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
     for page in range(1, 5):
@@ -86,7 +91,15 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page_number={page}'
-        browser.get(url)
+        try:
+            browser.get(url)
+        except ConnectionRefusedError as c:
+            print(f'ConnectionRefusedError: {url} \n {c}')
+            logging.info(f'ConnectionRefusedError: {url} \n {c}')
+        except NewConnectionError as n:
+            print(f'NewConnectionError: {url} \n {n}')
+            logging.info(f'NewConnectionError: {url} \n {n}')
+
         print("----------------------------------------------")
         print(f'title:{job_title.upper()}')
         print(f'Page:{page}')
@@ -94,6 +107,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
         print(f'zip:{zip}')
         print(f'URL: {url}')
         print("----------------------------------------------")
+        '''
         logging.info("----------------------------------------------")
         logging.info(f'title:{job_title}')
         logging.info(f'Page:{page}')
@@ -101,6 +115,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
         logging.info(f'zip:{zip}')
         logging.info(f'URL: {url}')
         logging.info("----------------------------------------------")
+        '''
 
         for title_index in range(26):
             try:
@@ -111,7 +126,7 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
             except NoSuchElementException:
                 element = title_selector.format(title_index)
-                logging.info(f'NoSuchElementException: {element}')
+               # logging.info(f'NoSuchElementException: {element}')
                 print(f'NoSuchElementException: {element}')
                 continue
 
@@ -119,120 +134,84 @@ def get_bodies(site_id, site_url_template, title, title_separator, title_selecto
             hrefs = [link.get_attribute('href') for link in job_links]
             for index, t in enumerate(jtitles):
                 print(f'Checking: {title}')
-                logging.info(f'Checking: {t}')
+                #logging.info(f'Checking: {t}')
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 evaluate = t.split()
                 match = 0
                 for word in evaluate:
-                    for keyword, value in title_dict.items():
+                    for keyword, value in weights.items():
                         if keyword.lower() == word.lower():
                             match += value
-                            logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
+                            #logging.debug(f'site_id: {site_id}, keyword: {keyword}, value: {value}')
                 if match < threshold:
                     print(f'THRESHOLD NOT MET: {t}')
-                    logging.info(f'THRESHOLD NOT MET: {t}')
+                    #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
-                    logging.info(f'MET THRESHOLD: {t}')
+                    #logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
-                    new_tab.get(job_description_url )
-                    body = new_tab.find_element_by_tag_name('body').text
-                    new_tab.close()
+                    try:
+                        new_tab.get(job_description_url)
+                        body = new_tab.find_element_by_tag_name('body').text
+                        new_tab.close()
+                    except ConnectionRefusedError:
+                        print(f'ConnectionRefusedError: {url}')
+                        logging.info(f'ConnectionRefusedError: {url}')
+                        break
                     sbody = body.split()
-                    for skill in skilllist:
+                    for skill in skill_keywords:
                         for word in sbody:
-                            logging.debug(f'Check skill:{skill} == word:{word}')
                             if skill.lower() == word.lower():
-                                logging.info(f'Found skill:{skill}')
                                 print(f'Found skill:{skill}')
-                                skill_dict[skill] += 1
+                                skill_counts[skill] += 1
+                                logging.info(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
                                 break
 
             if site_id == 'indeed':
                     break
         if site_id == 'indeed':
             break
-        browser.close()
-        browser.quit()
-    return skill_dict
+       # browser.close()
+       # browser.quit()
+    return skill_counts  
 
 
 
+if __name__ == "__main__":
+    start = make_time_string()
+    print(f'START TIME:{start}')
+    logging.info(f'START TIME:{start}')
+    skill_counts = dict()
+    for site_id in SITES_DICT.keys():
+        title_separator = SITES_DICT[site_id]['title_word_sep']
+        title_selector = SITES_DICT[site_id]['title_selector']
+        site_url_template = SITES_DICT[site_id]['url_template']
+        for title in TITLES.keys():
+            skill_keywords = TITLES[title][1]
+            weights = TITLES[title][0]
 
-results = dict()
-location = dict()
-income = dict()
-geo = 'San Francisco Bay Area'
-results.setdefault(geo, 'San Francisco Bay Area')
-
-jobtitle = 'software quality assurance engineer'
-skilllist = SKILL_KEYWORDS_QA
-title_dict = {'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 70, 'engineer': 20}
-threshold = 90
-
-site_id = 'indeed'
-title_separator = SITES_DICT[site_id]['title_word_sep']
-title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50000', '100000', '150000']
-
-site_url_template = SITES_DICT[site_id]['url_template']
-zips = SF_ZIPS
+            for geo in GEO_ZIPS.keys():
+                for salary in SITES_DICT[site_id]['salaries']:
+                    for zip in GEO_ZIPS[geo]:
+                        zip = str(zip)
+                        skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+                        cp = copy.deepcopy(skill_counts)
+                        for k, v in cp.items():
+                            if v == 0:
+                                skill_counts.pop(k)
+        print(f'site_id:{site_id} \n  {skill_counts}')
+        #logging.info(f'site_id:{site_id} \n  {temp}')
+    end = make_time_string()
+    print(f'END TIME:{end}')
+    logging.info(f'END TIME:{end}')
 
 
-for salary in salaries:
-    print(f'THIS SALARY {salary} ')
-    zcode = dict()
-    print(f'THIS SALARY {salary} ')
-    for zip in zips:
-        print(f'THIS ZIP {zip}')
-        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
-                                  skilllist, title_dict, threshold, radius='30', age='60')
-        # remove zeros
-        cp = copy.deepcopy(skill_counts)
-        for k, v in cp.items():
-            if v == 0:
-                skill_counts.pop(k)
-        zcode[zip] = skill_counts
-income[salary] = zcode
-location[geo] = income
-results[jobtitle] = location
 
-with open('indeedRESULTS.txt', 'w') as file:
-    file.write(str(results))
 
 '''
-site_id = 'careerbuilder'
-title_separator = SITES_DICT[site_id]['title_word_sep']
-title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50', '100', '150']
-site_url_template = SITES_DICT[site_id]['url_template']
-zips = SF_ZIPS
-
-print(f'THIS GEO {geo} ')
-for salary in salaries:
-    print(f'THIS SALARY {salary} ')
-    zcode = dict()
-    for zip in zips:
-        print(f'THIS ZIP {zip}')
-        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
-                                  skilllist, title_dict, threshold, radius='30', age='60')
-        #remove zeros
-        cp = copy.deepcopy(skill_counts)
-        for k, v in cp.items():
-            if v == 0:
-                skill_counts.pop(k)
-        zcode[zip] = skill_counts
-    salary = salary + '000'
-    income[salary] = zcode
-location[geo] = income
-logging.info(f'location:{location}')
-results[jobtitle] = location
-
-
-
 
 with open('cbRESULTS.txt', 'w') as file:
     file.write(str(results))
@@ -243,5 +222,3 @@ with open('cbRESULTS.txt', 'w') as file:
 
 
 
-
-print('DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
