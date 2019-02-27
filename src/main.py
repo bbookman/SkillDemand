@@ -89,6 +89,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
     for page in range(1, 5):
+        print('Paging')
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
         if site_id == 'careerbuilder':
@@ -149,11 +150,15 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
 
             #jtitles = [link.text for link in job_links]
             #hrefs = [link.get_attribute('href') for link in job_links]
+            not_met = 0
             for index, t in enumerate(jtitles):
                 #skip if already seen
                 if t in matching_titles or t in missing_titles:
                     #print(f'ALREADY SEEN: {t}')
                     continue
+                #skip if too many not met
+                if not_met == 10:
+                    break
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 evaluate = t.split()
@@ -163,8 +168,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         if keyword.lower() == word.lower():
                             match += value
                 if match < threshold:
-                    #print(f'THRESHOLD NOT MET: {t}')
+                    if t in missing_titles:
+                        continue
                     missing_titles.add(t)
+                    print(f'THRESHOLD NOT MET: {t}')
+                    not_met +=1
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
@@ -182,7 +190,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         new_tab.close()
                     except ConnectionRefusedError:
                         print(f'ConnectionRefusedError: {url}')
-                        logging.info(f'ConnectionRefusedError: {url}')
+                       # logging.info(f'ConnectionRefusedError: {url}')
                         break
                     sbody = body.split()
                     for skill in skill_keywords:
@@ -193,7 +201,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                                 #print(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
                                 break
 
-            if site_id == 'indeed':
+            if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     break
         if site_id == 'indeed':
             break
@@ -227,6 +235,7 @@ if __name__ == "__main__":
                         salary+= '000'
                     salaries.setdefault(salary,0)
                     for zip in GEO_ZIPS[geo]:
+                        print('Working...')
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
