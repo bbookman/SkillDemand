@@ -66,7 +66,7 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='30', age='60'):
+def get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='60', age='60'): #todo
     """
 
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -89,12 +89,21 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
     for page in range(1, 5):
-        print('Paging')
+        print(f'Page:{page}')
+        job_links = list()
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page_number={page}'
+            try:
+                no_more_pages = browser.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
+                if no_more_pages:
+                    print(f'NO MORE PAGES')
+                    break
+            except NoSuchElementException:
+                logging.debug('ignore me')
+
         if site_id == 'ziprecruiter':
             url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
             url += f'page={page}'
@@ -104,32 +113,14 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         try:
             browser.get(url)
         except ConnectionRefusedError as c:
-            #print(f'ConnectionRefusedError: {url} \n {c}')
+            print(f'ConnectionRefusedError: {url} \n {c}')
             logging.debug(f'ConnectionRefusedError: {url} \n {c}')
         except NewConnectionError as n:
-            #print(f'NewConnectionError: {url} \n {n}')
+            print(f'NewConnectionError: {url} \n {n}')
             logging.debug(f'NewConnectionError: {url} \n {n}')
-        '''
-        print("----------------------------------------------")
-        print(f'title:{job_title.upper()}')
-        print(f'Page:{page}')
-        print(f'salary: {salary}')
-        print(f'zip:{zip}')
-        print(f'URL: {url}')
-        print("----------------------------------------------")
-  
-        logging.info("----------------------------------------------")
-        logging.info(f'title:{job_title}')
-        logging.info(f'Page:{page}')
-        logging.info(f'salary: {salary}')
-        logging.info(f'zip:{zip}')
-        logging.info(f'URL: {url}')
-        logging.info("----------------------------------------------")
-
-        '''
         for title_index in range(1,26):
-            job_links = list()
             try:
+
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
                     jtitles = [link.text for link in job_links]
@@ -138,18 +129,15 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
+                    #import pdb;pdb.set_trace()
                 if site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     job_links = [a for a in browser.find_elements_by_tag_name('a') if title_selector in a.get_attribute('class')]
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
-            except NoSuchElementException:
+            except NoSuchElementException as e:
                 element = title_selector.format(title_index)
-                logging.debug(f'NoSuchElementException: {element}')
-                print(f'NoSuchElementException: {element}')
+                logging.debug(f'NoSuchElementException: {element} \n {e}')
                 continue
-
-            #jtitles = [link.text for link in job_links]
-            #hrefs = [link.get_attribute('href') for link in job_links]
             not_met = 0
             for index, t in enumerate(jtitles):
                 #skip if already seen
@@ -158,6 +146,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     continue
                 #skip if too many not met
                 if not_met == 10:
+                    print('Too many not met, skipping')
                     break
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
@@ -232,13 +221,16 @@ if __name__ == "__main__":
             for geo in GEO_ZIPS.keys():
                 for salary in SITES_DICT[site_id]['salaries']:
                     if site_id == 'careerbuilder':
-                        salary+= '000'
-                    salaries.setdefault(salary,0)
+                        salaries.setdefault(salary+'000', 0)
+                    else:
+                        salaries.setdefault(salary,0)
                     for zip in GEO_ZIPS[geo]:
                         print('Working...')
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
+                        #print(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip)
+                        #import pdb;pdb.set_trace()
                         skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
                         for skill, value in skill_counts.items():
                             skill_summary[skill] += value
