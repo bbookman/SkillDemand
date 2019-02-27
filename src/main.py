@@ -165,6 +165,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
+
+                    if t in matching_titles:
+                        continue
                     print(f'MET THRESHOLD: {t}')
                     matching_titles.add(t)
                     #logging.info(f'MET THRESHOLD: {t}')
