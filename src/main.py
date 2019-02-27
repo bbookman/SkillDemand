@@ -97,12 +97,12 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         try:
             browser.get(url)
         except ConnectionRefusedError as c:
-            print(f'ConnectionRefusedError: {url} \n {c}')
-            logging.info(f'ConnectionRefusedError: {url} \n {c}')
+            #print(f'ConnectionRefusedError: {url} \n {c}')
+            logging.debug(f'ConnectionRefusedError: {url} \n {c}')
         except NewConnectionError as n:
-            print(f'NewConnectionError: {url} \n {n}')
-            logging.info(f'NewConnectionError: {url} \n {n}')
-
+            #print(f'NewConnectionError: {url} \n {n}')
+            logging.debug(f'NewConnectionError: {url} \n {n}')
+        '''
         print("----------------------------------------------")
         print(f'title:{job_title.upper()}')
         print(f'Page:{page}')
@@ -110,7 +110,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         print(f'zip:{zip}')
         print(f'URL: {url}')
         print("----------------------------------------------")
-        '''
+  
         logging.info("----------------------------------------------")
         logging.info(f'title:{job_title}')
         logging.info(f'Page:{page}')
@@ -129,8 +129,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
             except NoSuchElementException:
                 element = title_selector.format(title_index)
-               # logging.info(f'NoSuchElementException: {element}')
-                print(f'NoSuchElementException: {element}')
+                logging.debug(f'NoSuchElementException: {element}')
                 continue
 
             jtitles = [link.text for link in job_links]
@@ -138,7 +137,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             for index, t in enumerate(jtitles):
                 #skip if already seen
                 if t in matching_titles or t in missing_titles:
-                    print(f'ALREADY SEEN: {t}')
+                    #print(f'ALREADY SEEN: {t}')
                     continue
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
@@ -149,12 +148,12 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         if keyword.lower() == word.lower():
                             match += value
                 if match < threshold:
-                    print(f'THRESHOLD NOT MET: {t}')
+                    #print(f'THRESHOLD NOT MET: {t}')
                     missing_titles.add(t)
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
-                    print(f'MET THRESHOLD: {t}')
+                    #print(f'MET THRESHOLD: {t}')
                     matching_titles.add(t)
                     #logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
@@ -171,9 +170,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     for skill in skill_keywords:
                         for word in sbody:
                             if skill.lower() == word.lower():
-                                #print(f'Found skill:{skill}')
                                 skill_counts[skill] += 1
-                                logging.info(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
+                                #logging.info(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
+                                #print(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
                                 break
 
             if site_id == 'indeed':
@@ -188,7 +187,12 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
 
 if __name__ == "__main__":
     start = make_time_string()
-    skill_counts = dict()
+    skill_summary = dict()
+    salaries = dict()
+    zcode = dict()
+    area = dict()
+    titles = dict()
+
     for site_id in SITES_DICT.keys():
         title_separator = SITES_DICT[site_id]['title_word_sep']
         title_selector = SITES_DICT[site_id]['title_selector']
@@ -196,25 +200,36 @@ if __name__ == "__main__":
         for title in TITLES.keys():
             skill_keywords = TITLES[title][1]
             weights = TITLES[title][0]
-
+            titles.setdefault(title, 'DEFAULT TITLE')
+            for skill in skill_keywords:
+                skill_summary.setdefault(skill,0)
             for geo in GEO_ZIPS.keys():
                 for salary in SITES_DICT[site_id]['salaries']:
+                    if site_id == 'careerbuilder':
+                        salary+= '000'
+                    salaries.setdefault(salary,0)
                     for zip in GEO_ZIPS[geo]:
                         zip = str(zip)
+                        zcode.setdefault(zip, dict())
+                        skill_counts = dict()
                         skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
-                        cp = copy.deepcopy(skill_counts)
-                        for k, v in cp.items():
-                            if v == 0:
-                                skill_counts.pop(k)
-        print(f'site_id:{site_id} \n  {skill_counts}')
-        logging.info(f'site_id:{site_id} \n  {skill_counts}')
-    print(f'Matching: \n {matching_titles}')
-    logging.info(f'Matching: \n {matching_titles}')
-    end = make_time_string()
+
+                        for skill, value in skill_counts.items():
+                            skill_summary[skill] += value
+                    cp = copy.deepcopy(skill_summary)
+                    for k, v in cp.items():
+                        if v == 0:
+                            skill_counts.pop(k)
+                    zcode[zip] = skill_summary
+                salaries[salary] = zcode
+            area[geo] = salaries
+        titles[title] = area
     print(f'START TIME:{start}')
     logging.info(f'START TIME:{start}')
+    end = make_time_string()
     print(f'END TIME:{end}')
     logging.info(f'END TIME:{end}')
+    print(titles)
 
 
 
