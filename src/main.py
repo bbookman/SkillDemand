@@ -107,6 +107,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         print(f'zip:{zip}')
         print(f'URL: {url}')
         print("----------------------------------------------")
+        '''
         logging.info("----------------------------------------------")
         logging.info(f'title:{job_title}')
         logging.info(f'Page:{page}')
@@ -114,6 +115,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         logging.info(f'zip:{zip}')
         logging.info(f'URL: {url}')
         logging.info("----------------------------------------------")
+        '''
 
         for title_index in range(26):
             try:
@@ -124,7 +126,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
             except NoSuchElementException:
                 element = title_selector.format(title_index)
-                logging.info(f'NoSuchElementException: {element}')
+               # logging.info(f'NoSuchElementException: {element}')
                 print(f'NoSuchElementException: {element}')
                 continue
 
@@ -132,7 +134,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             hrefs = [link.get_attribute('href') for link in job_links]
             for index, t in enumerate(jtitles):
                 print(f'Checking: {title}')
-                logging.info(f'Checking: {t}')
+                #logging.info(f'Checking: {t}')
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 evaluate = t.split()
@@ -141,14 +143,14 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     for keyword, value in weights.items():
                         if keyword.lower() == word.lower():
                             match += value
-                            logging.debug(f'Matched keyword: {keyword}, value: {value}, match: {match}')
+                            #logging.debug(f'site_id: {site_id}, keyword: {keyword}, value: {value}')
                 if match < threshold:
                     print(f'THRESHOLD NOT MET: {t}')
-                    logging.info(f'THRESHOLD NOT MET: {t}')
+                    #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
-                    logging.info(f'MET THRESHOLD: {t}')
+                    #logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
                     try:
@@ -163,9 +165,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     for skill in skill_keywords:
                         for word in sbody:
                             if skill.lower() == word.lower():
-                                logging.info(f'Found skill:{skill}')
                                 print(f'Found skill:{skill}')
                                 skill_counts[skill] += 1
+                                logging.info(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
                                 break
 
             if site_id == 'indeed':
@@ -174,7 +176,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             break
        # browser.close()
        # browser.quit()
-    return skill_counts  #maybe NOT ???  #todo
+    return skill_counts  
 
 
 
@@ -195,13 +197,13 @@ if __name__ == "__main__":
                 for salary in SITES_DICT[site_id]['salaries']:
                     for zip in GEO_ZIPS[geo]:
                         zip = str(zip)
-                        temp = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
-                        cp = copy.deepcopy(temp)
+                        skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+                        cp = copy.deepcopy(skill_counts)
                         for k, v in cp.items():
                             if v == 0:
-                                temp.pop(k)
-        print(f'site_id:{site_id} \n  {temp}')
-        logging.info(f'site_id:{site_id} \n  {temp}')
+                                skill_counts.pop(k)
+        print(f'site_id:{site_id} \n  {skill_counts}')
+        #logging.info(f'site_id:{site_id} \n  {temp}')
     end = make_time_string()
     print(f'END TIME:{end}')
     logging.info(f'END TIME:{end}')
@@ -209,83 +211,7 @@ if __name__ == "__main__":
 
 
 
-
 '''
-    skill_counts = dict()
-    for skill in skilllist:
-        skill_counts.setdefault(skill, 0)
-
-
-results = dict()
-location = dict()
-income = dict()
-geo = 'San Francisco Bay Area'
-results.setdefault(geo, 'San Francisco Bay Area')
-jobtitle = 'software quality assurance engineer'
-
-skilllist = TITLES['software quality assurance engineer'][1]
-title_dict = TITLES['software quality assurance engineer'][0]
-threshold = 90
-
-site_id = 'indeed'
-title_separator = SITES_DICT[site_id]['title_word_sep']
-title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50000', '100000', '150000']
-
-site_url_template = SITES_DICT[site_id]['url_template']
-zips = GEO_ZIPS['San Francisco Bay Area']
-
-
-for salary in salaries:
-    print(f'THIS SALARY {salary} ')
-    zcode = dict()
-    print(f'THIS SALARY {salary} ')
-    for zip in zips:
-        print(f'THIS ZIP {zip}')
-        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
-                                  skilllist, title_dict, threshold, radius='30', age='60')
-        # remove zeros
-        cp = copy.deepcopy(skill_counts)
-        for k, v in cp.items():
-            if v == 0:
-                skill_counts.pop(k)
-        zcode[zip] = skill_counts
-income[salary] = zcode
-location[geo] = income
-results[jobtitle] = location
-
-#with open('indeedRESULTS.txt', 'w') as file:
-#    file.write(str(results))
-
-site_id = 'careerbuilder'
-title_separator = SITES_DICT[site_id]['title_word_sep']
-title_selector = SITES_DICT[site_id]['title_selector']
-salaries = ['50', '100', '150']
-site_url_template = SITES_DICT[site_id]['url_template']
-zips = SF_ZIPS
-
-print(f'THIS GEO {geo} ')
-for salary in salaries:
-    print(f'THIS SALARY {salary} ')
-    zcode = dict()
-    for zip in zips:
-        print(f'THIS ZIP {zip}')
-        skill_counts = get_bodies(site_id, site_url_template, jobtitle, title_separator, title_selector, salary,
-                                  skilllist, title_dict, threshold, radius='30', age='60')
-        #remove zeros
-        cp = copy.deepcopy(skill_counts)
-        for k, v in cp.items():
-            if v == 0:
-                skill_counts.pop(k)
-        zcode[zip] = skill_counts
-    salary = salary + '000'
-    income[salary] = zcode
-location[geo] = income
-logging.info(f'location:{location}')
-results[jobtitle] = location
-
-
-
 
 with open('cbRESULTS.txt', 'w') as file:
     file.write(str(results))
