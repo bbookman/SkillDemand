@@ -8,6 +8,9 @@ import logging
 from constants import *
 from urllib3.exceptions import NewConnectionError
 
+matching_titles = set()
+missing_titles = set()
+
 def make_date_string():
     stamp = datetime.now()
     date_string = stamp.strftime('%Y-%d-%m-%H-%M-%S')
@@ -117,7 +120,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         logging.info("----------------------------------------------")
         '''
 
-        for title_index in range(26):
+        for title_index in range(1,26):
             try:
                 if site_id == 'indeed':
                     job_links = browser.find_elements_by_class_name(title_selector)
@@ -133,8 +136,10 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             jtitles = [link.text for link in job_links]
             hrefs = [link.get_attribute('href') for link in job_links]
             for index, t in enumerate(jtitles):
-                print(f'Checking: {title}')
-                #logging.info(f'Checking: {t}')
+                #skip if already seen
+                if t in matching_titles or t in missing_titles:
+                    print(f'ALREADY SEEN: {t}')
+                    continue
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 evaluate = t.split()
@@ -143,13 +148,14 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     for keyword, value in weights.items():
                         if keyword.lower() == word.lower():
                             match += value
-                            #logging.debug(f'site_id: {site_id}, keyword: {keyword}, value: {value}')
                 if match < threshold:
                     print(f'THRESHOLD NOT MET: {t}')
+                    missing_titles.add(t)
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
+                    matching_titles.add(t)
                     #logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
@@ -165,7 +171,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     for skill in skill_keywords:
                         for word in sbody:
                             if skill.lower() == word.lower():
-                                print(f'Found skill:{skill}')
+                                #print(f'Found skill:{skill}')
                                 skill_counts[skill] += 1
                                 logging.info(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
                                 break
@@ -176,14 +182,12 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             break
        # browser.close()
        # browser.quit()
-    return skill_counts  
+    return skill_counts
 
 
 
 if __name__ == "__main__":
     start = make_time_string()
-    print(f'START TIME:{start}')
-    logging.info(f'START TIME:{start}')
     skill_counts = dict()
     for site_id in SITES_DICT.keys():
         title_separator = SITES_DICT[site_id]['title_word_sep']
@@ -203,8 +207,12 @@ if __name__ == "__main__":
                             if v == 0:
                                 skill_counts.pop(k)
         print(f'site_id:{site_id} \n  {skill_counts}')
-        #logging.info(f'site_id:{site_id} \n  {temp}')
+        logging.info(f'site_id:{site_id} \n  {skill_counts}')
+    print(f'Matching: \n {matching_titles}')
+    logging.info(f'Matching: \n {matching_titles}')
     end = make_time_string()
+    print(f'START TIME:{start}')
+    logging.info(f'START TIME:{start}')
     print(f'END TIME:{end}')
     logging.info(f'END TIME:{end}')
 
