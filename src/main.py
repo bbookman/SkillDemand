@@ -46,7 +46,7 @@ def _build_site_url(site_id, template, title, salary='', zipcode='', radius='30'
 
     returns an url string
     """
-    if site_id == 'indeed':
+    if site_id == 'indeed' or site_id =='ziprecruiter':
         return template.format(title = title, salary = salary, zipcode = zipcode, radius = radius, age = age)
     if site_id == 'careerbuilder':
         cbtitle = _build_job_title(title, '-')
@@ -94,6 +94,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page_number={page}'
+        if site_id == 'ziprecruiter':
+            url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
+            url += f'page={page}'
         try:
             browser.get(url)
         except ConnectionRefusedError as c:
@@ -118,22 +121,31 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         logging.info(f'zip:{zip}')
         logging.info(f'URL: {url}')
         logging.info("----------------------------------------------")
-        '''
 
+        '''
         for title_index in range(1,26):
+            job_links = list()
             try:
                 if site_id == 'indeed':
                     job_links = browser.find_elements_by_class_name(title_selector)
+                    jtitles = [link.text for link in job_links]
+                    hrefs = [link.get_attribute('href') for link in job_links]
                 if site_id == 'careerbuilder':
-                    job_links = list()
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
+                    jtitles = [link.text for link in job_links]
+                    hrefs = [link.get_attribute('href') for link in job_links]
+                if site_id == 'ziprecruiter':
+                    job_links = [a for a in browser.find_elements_by_tag_name('a') if title_selector in a.get_attribute('class')]
+                    jtitles = [link.text for link in job_links]
+                    hrefs = [link.get_attribute('href') for link in job_links]
             except NoSuchElementException:
                 element = title_selector.format(title_index)
                 logging.debug(f'NoSuchElementException: {element}')
+                print(f'NoSuchElementException: {element}')
                 continue
 
-            jtitles = [link.text for link in job_links]
-            hrefs = [link.get_attribute('href') for link in job_links]
+            #jtitles = [link.text for link in job_links]
+            #hrefs = [link.get_attribute('href') for link in job_links]
             for index, t in enumerate(jtitles):
                 #skip if already seen
                 if t in matching_titles or t in missing_titles:
@@ -153,7 +165,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
-                    #print(f'MET THRESHOLD: {t}')
+                    print(f'MET THRESHOLD: {t}')
                     matching_titles.add(t)
                     #logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
@@ -213,7 +225,6 @@ if __name__ == "__main__":
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
                         skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
-
                         for skill, value in skill_counts.items():
                             skill_summary[skill] += value
                     cp = copy.deepcopy(skill_summary)

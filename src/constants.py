@@ -13,25 +13,14 @@ SKILL_KEYWORDS_QA =['python', 'c++', 'java', 'bash','ruby', 'perl', 'matlab', 'j
             'django', 'pytest', 'css', 'html', 'appium', 'linux', 'css', 'ui', 'soa', 'unix', 'RESTful', 'Elastic', 'git',
             'github', 'database', 'acceptance', 'uat', 'healthcare', 'banking']
 
+
 SITES_DICT = {
-
-
-    'careerbuilder' : {
-        'url_template' : 'https://www.careerbuilder.com/jobs-{cbtitle}-in-{zipcode}?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}',
-        'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
+    'ziprecruiter': {
+        'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
+        'title_selector': 'job_link',
         'title_word_sep': '+',
-        'body_selector': 'body',
-        'salaries':['150','100', ]#'50'] #todo
+        'salaries': ['150000', '100000', ]  # '50000'] #todo
 
-
-    },
-
-    'indeed': {
-        'url_template': 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',
-        'title_selector': 'turnstileLink',
-        'title_word_sep': '+',
-        'body_selector': 'body',
-        'salaries': ['150000',  '100000']#, '50000'], todo
     },
 
 }
@@ -57,6 +46,32 @@ TITLES = {
 }
 
 '''
+
+
+
+
+
+
+    'careerbuilder' : {
+        'url_template' : 'https://www.careerbuilder.com/jobs-{cbtitle}-in-{zipcode}?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}&',
+        'title_selector' : "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
+        'title_word_sep': '+',
+        'salaries':['150','100', ]#'50'] #todo
+
+
+    },
+
+    'indeed': {
+        'url_template': 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',
+        'title_selector': 'turnstileLink',
+        'title_word_sep': '+',
+        'salaries': ['150000',  '100000']#, '50000'], todo
+    },
+
+
+
+
+
 95054, 94010, 
 94536, 94539, 94402, 94404, 95054, 94010, 94536, 94539, 94402, 94404,
 94403, 94538, 94560, 94065, 94063, 94027, 94002,
