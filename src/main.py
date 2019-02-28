@@ -211,8 +211,6 @@ if __name__ == "__main__":
             skill_keywords = TITLES[title][1]
             weights = TITLES[title][0]
             titles.setdefault(title, 'DEFAULT TITLE')
-            for skill in skill_keywords:
-                skill_summary.setdefault(skill,0)
             for geo in GEO_ZIPS.keys():
                 for salary in SITES_DICT[site_id]['salaries']:
                     if site_id =='careerbuilder':
@@ -224,24 +222,27 @@ if __name__ == "__main__":
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
-                        #print(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip)
                         skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
                         for skill, value in skill_counts.items():
+                            skill_summary.setdefault(skill,0)
                             skill_summary[skill] += value
-                    cp = copy.deepcopy(skill_summary)
-                    for k, v in cp.items():
-                        if v == 0:
-                            skill_counts.pop(k)
-                    zcode[zip] = skill_summary  #GETS OVERWRITTEN BUT OKAY BECAUSE OF ADDATIVE SKILL
-                salaries[salary] = zcode
-            area[geo] = salaries
-        titles[title] = area
+                        cp = copy.deepcopy(skill_summary)  #NOT EXACTLY WORKING AS EXPECTED
+                        for k, v in cp.items():
+                            if v == 0:
+                                skill_summary.pop(k)
+                        zcode[zip] = skill_summary
+                    if site_id == 'careerbuilder' and len(salary)<=3:
+                        salary+= '000'
+                    salaries[salary] = zcode
+                area[geo] = salaries
+            titles[title] = area
+
+
     print(f'START TIME:{start}')
     logging.info(f'START TIME:{start}')
     end = make_time_string()
     print(f'END TIME:{end}')
     logging.info(f'END TIME:{end}')
-    print(titles)
 
-with open('ESULTS.txt', 'w') as file:
-    file.write(str(TITLES))
+with open('RESULTS.txt', 'w') as file:
+    file.write(str(titles))
