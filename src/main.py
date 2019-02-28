@@ -139,9 +139,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 continue
             not_met = 0
             for index, t in enumerate(jtitles):
-                #skip if already seen
-                if t in matching_titles or t in missing_titles:
-                    continue
+                #skip if already seen  NOT APPLICABLE FOR CERTAIN JOB TITLES
+                #if t in matching_titles or t in missing_titles:
+                #    continue
                 #skip if too many not met
                 if not_met == 10:
                     print('TOO MANY NOT MET, SKIPPING')
@@ -155,19 +155,19 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         if keyword.lower() == word.lower():
                             match += value
                 if match < threshold:
-                    if t in missing_titles:
+                    if t in missing_titles:  #okay to skip here
                         continue
                     missing_titles.add(t)
                     print(f'THRESHOLD NOT MET: {t}')
                     not_met +=1
-                    #logging.info(f'THRESHOLD NOT MET: {t}')
+                    logging.debug(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
-                    if t in matching_titles:
-                        continue
+                    #if t in matching_titles:  #NOT APPLICABLE FOR CERTAIN TITLES
+                    #    continue
                     print(f'MET THRESHOLD: {t}')
-                    matching_titles.add(t)
-                    #logging.info(f'MET THRESHOLD: {t}')
+                    #matching_titles.add(t)
+                    logging.debug(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
                     try:
@@ -176,7 +176,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         new_tab.close()
                     except ConnectionRefusedError:
                         print(f'ConnectionRefusedError: {url}')
-                       # logging.info(f'ConnectionRefusedError: {url}')
+                        logging.debug(f'ConnectionRefusedError: {url}')
                         break
                     sbody = body.split()
                     for skill in skill_keywords:
@@ -204,10 +204,16 @@ if __name__ == "__main__":
     titles = dict()
 
     for site_id in SITES_DICT.keys():
+        time = make_time_string()
+        print(f'START {site_id}: {time} ')
+        logging.info(f'START {site_id}: {time} ')
         title_separator = SITES_DICT[site_id]['title_word_sep']
         title_selector = SITES_DICT[site_id]['title_selector']
         site_url_template = SITES_DICT[site_id]['url_template']
         for title in TITLES.keys():
+            time = make_time_string()
+            print(f'START TITLE {title}: {time}')
+            logging.info(f'START TITLE {title}: {time}')
             skill_keywords = TITLES[title][1]
             weights = TITLES[title][0]
             titles.setdefault(title, 'DEFAULT TITLE')
@@ -235,14 +241,20 @@ if __name__ == "__main__":
                         salary+= '000'
                     salaries[salary] = zcode
                 area[geo] = salaries
+                time = make_time_string()
+                print(f'END TITLE {title}: {time}')
+                logging.info(f'END TITLE {title}: {time}')
             titles[title] = area
+        time = make_time_string()
+        print(f'END {site_id}: {time} ')
+        logging.info(f'END {site_id}: {time} ')
 
 
-    print(f'START TIME:{start}')
-    logging.info(f'START TIME:{start}')
+    print(f'PROGRAM START TIME:{start}')
+    logging.info(f'PROGRAM START TIME:{start}')
     end = make_time_string()
-    print(f'END TIME:{end}')
-    logging.info(f'END TIME:{end}')
+    print(f'PROGRAM END TIME:{end}')
+    logging.info(f'PROGRAM END TIME:{end}')
 
 with open('RESULTS.txt', 'w') as file:
     file.write(str(titles))
