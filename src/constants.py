@@ -22,9 +22,28 @@ SITES_DICT = {
             'salaries': ['150', '100',  '50']
 
         },
+        'stackoverflow': {
+            'url_template': 'https://stackoverflow.com/jobs?q={title}&l={zipcode}&d={radius}&u=Miles&s={salary}&c=USD&',
+            'title_selector': 's-link',
+            'title_word_sep': '+',
+            'salaries': ['150000', '100000', '50000']
+        },
+         'ziprecruiter': {
+            'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
+            'title_selector': 'job_link',
+            'title_word_sep': '+',
+            'salaries': ['150000', '100000', '50000']
 
+        },
 
-    }
+        'indeed': {
+            'url_template': 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',
+            'title_selector': 'turnstileLink',
+            'title_word_sep': '+',
+            'salaries': ['150000', '100000', '50000'],
+        },
+
+}
 
 GEO_ZIPS = {
     'San Francisco Bay Area':
@@ -64,13 +83,13 @@ TITLES = {
         'salaries': ['150000', '100000', '50000']
     },
 
-        'ziprecruiter': {
-            'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
-            'title_selector': 'job_link',
-            'title_word_sep': '+',
-            'salaries': ['150000', '100000', '50000']
+    'ziprecruiter': {
+        'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
+        'title_selector': 'job_link',
+        'title_word_sep': '+',
+        'salaries': ['150000', '100000', '50000']
 
-        },
+    },
         
     'indeed': {
         'url_template': 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',

@@ -99,7 +99,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             try:
                 no_more_pages = browser.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
                 if no_more_pages:
-                    print(f'NO MORE PAGES')
+                    #print(f'NO MORE PAGES')
                     break
             except NoSuchElementException:
                 logging.debug('ignore me')
@@ -113,10 +113,10 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         try:
             browser.get(url)
         except ConnectionRefusedError as c:
-            print(f'ConnectionRefusedError: {url} \n {c}')
+            #print(f'ConnectionRefusedError: {url} \n {c}')
             logging.debug(f'ConnectionRefusedError: {url} \n {c}')
         except NewConnectionError as n:
-            print(f'NewConnectionError: {url} \n {n}')
+            #print(f'NewConnectionError: {url} \n {n}')
             logging.debug(f'NewConnectionError: {url} \n {n}')
         for title_index in range(1,26):
             try:
@@ -129,7 +129,6 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     jtitles = [link.text for link in job_links]
                     hrefs = [link.get_attribute('href') for link in job_links]
-                    #import pdb;pdb.set_trace()
                 if site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     job_links = [a for a in browser.find_elements_by_tag_name('a') if title_selector in a.get_attribute('class')]
                     jtitles = [link.text for link in job_links]
@@ -142,11 +141,10 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             for index, t in enumerate(jtitles):
                 #skip if already seen
                 if t in matching_titles or t in missing_titles:
-                    #print(f'ALREADY SEEN: {t}')
                     continue
                 #skip if too many not met
                 if not_met == 10:
-                    print('Too many not met, skipping')
+                    print('TOO MANY NOT MET, SKIPPING')
                     break
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
@@ -165,7 +163,6 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
-
                     if t in matching_titles:
                         continue
                     print(f'MET THRESHOLD: {t}')
@@ -186,8 +183,6 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         for word in sbody:
                             if skill.lower() == word.lower():
                                 skill_counts[skill] += 1
-                                #logging.info(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
-                                #print(f'site_id: {site_id}, zip:{zip}, title: {title}, skill:{skill}, count: {skill_counts[skill]}')
                                 break
 
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
@@ -220,17 +215,16 @@ if __name__ == "__main__":
                 skill_summary.setdefault(skill,0)
             for geo in GEO_ZIPS.keys():
                 for salary in SITES_DICT[site_id]['salaries']:
-                    if site_id == 'careerbuilder':
-                        salaries.setdefault(salary+'000', 0)
+                    if site_id =='careerbuilder':
+                        salaries.setdefault(salary+'000', dict())
                     else:
-                        salaries.setdefault(salary,0)
+                        salaries.setdefault(salary, dict())
                     for zip in GEO_ZIPS[geo]:
                         print('Working...')
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
                         #print(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip)
-                        #import pdb;pdb.set_trace()
                         skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
                         for skill, value in skill_counts.items():
                             skill_summary[skill] += value
@@ -239,7 +233,7 @@ if __name__ == "__main__":
                         if v == 0:
                             skill_counts.pop(k)
                     zcode[zip] = skill_summary
-                salaries[salary] = zcode
+                    salaries[salary] = zcode
             area[geo] = salaries
         titles[title] = area
     print(f'START TIME:{start}')
