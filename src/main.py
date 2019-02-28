@@ -232,8 +232,8 @@ if __name__ == "__main__":
                     for k, v in cp.items():
                         if v == 0:
                             skill_counts.pop(k)
-                    zcode[zip] = skill_summary
-                    salaries[salary] = zcode
+                    zcode[zip] = skill_summary  #MUST UPDATE NOT OVER-WRITE #todo
+                salaries[salary] = zcode
             area[geo] = salaries
         titles[title] = area
     print(f'START TIME:{start}')
