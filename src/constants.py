@@ -90,7 +90,7 @@ TITLES = {
         'salaries': ['150000', '100000', '50000']
 
     },
-        
+
     'indeed': {
         'url_template': 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',
         'title_selector': 'turnstileLink',

@@ -232,7 +232,7 @@ if __name__ == "__main__":
                     for k, v in cp.items():
                         if v == 0:
                             skill_counts.pop(k)
-                    zcode[zip] = skill_summary  #MUST UPDATE NOT OVER-WRITE #todo
+                    zcode[zip] = skill_summary  #GETS OVERWRITTEN BUT OKAY BECAUSE OF ADDATIVE SKILL
                 salaries[salary] = zcode
             area[geo] = salaries
         titles[title] = area
@@ -243,17 +243,5 @@ if __name__ == "__main__":
     logging.info(f'END TIME:{end}')
     print(titles)
 
-
-
-
-'''
-
-with open('cbRESULTS.txt', 'w') as file:
-    file.write(str(results))
-
-'''
-
-
-
-
-
+with open('ESULTS.txt', 'w') as file:
+    file.write(str(TITLES))
