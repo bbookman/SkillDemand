@@ -123,15 +123,15 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
 
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
-                    jtitles = [link.text for link in job_links]
+                    jtitles = [link.text for link in job_links if link.text  not in missing_titles]
                     hrefs = [link.get_attribute('href') for link in job_links]
                 if site_id == 'careerbuilder':
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
-                    jtitles = [link.text for link in job_links]
+                    jtitles = [link.text for link in job_links if link.text not in missing_titles]
                     hrefs = [link.get_attribute('href') for link in job_links]
                 if site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     job_links = [a for a in browser.find_elements_by_tag_name('a') if title_selector in a.get_attribute('class')]
-                    jtitles = [link.text for link in job_links]
+                    jtitles = [link.text for link in job_links if link.text not in missing_titles]
                     hrefs = [link.get_attribute('href') for link in job_links]
             except NoSuchElementException as e:
                 element = title_selector.format(title_index)
@@ -139,9 +139,6 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 continue
             not_met = 0
             for index, t in enumerate(jtitles):
-                #skip if already seen
-                if t in matching_titles or t in missing_titles:
-                    continue
                 #skip if too many not met
                 if not_met == 10:
                     print('TOO MANY NOT MET, SKIPPING')
@@ -155,16 +152,12 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         if keyword.lower() == word.lower():
                             match += value
                 if match < threshold:
-                    if t in missing_titles:
-                        continue
                     missing_titles.add(t)
                     print(f'THRESHOLD NOT MET: {t}')
                     not_met +=1
                     #logging.info(f'THRESHOLD NOT MET: {t}')
                     continue
                 else:
-                    if t in matching_titles:
-                        continue
                     print(f'MET THRESHOLD: {t}')
                     matching_titles.add(t)
                     #logging.info(f'MET THRESHOLD: {t}')

@@ -34,7 +34,7 @@ GEO_ZIPS = {
 
 
 TITLES = {
-    'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 70, 'automation': 30, 'automated': 30, 'engineer': 20, 'testing': 70},
+    'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 60, 'automation': 30, 'automated': 30, 'engineer': 20, 'testing': 70},
      SKILL_KEYWORDS_QA],
     #'data science engineer': [{'data':60, 'science':30, 'engineer':30, 'scientist': 30, 'quantitative': 50, 'analyst':40}], SKILL_KEYWORDS_QA],
 
