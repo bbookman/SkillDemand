@@ -2,19 +2,33 @@ SKILL_KEYWORDS_QA =['python', 'c++', 'java', 'bash','ruby', ]
 
 
 SITES_DICT = {
-        'careerbuilder': {
-            'url_template': 'https://www.careerbuilder.com/jobs-{cbtitle}-in-{zipcode}?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}&',
-            'title_selector': "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
-            'title_word_sep': '+',
-            'salaries': ['150', '100',  '50']
+    'stackoverflow': {
+        'url_template': 'https://stackoverflow.com/jobs?q={title}&l={zipcode}&d={radius}&u=Miles&s={salary}&c=USD&',
+        'title_selector': 's-link',
+        'title_word_sep': '+',
+        'salaries': ['150000', '100000', '50000']
+    },
+    'careerbuilder': {
+        'url_template': 'https://www.careerbuilder.com/jobs-{cbtitle}-in-{zipcode}?keywords={title}&location={zipcode}&radius={radius}&pay={salary}&posted={age}&',
+        'title_selector': "//h2[@class='job-title show-for-medium-up']//a[@data-gtm='jrp-job-list|job-title-click|{}']",
+        'title_word_sep': '+',
+        'salaries': ['150', '100',  '50']
 
-        },
-        'stackoverflow': {
-            'url_template': 'https://stackoverflow.com/jobs?q={title}&l={zipcode}&d={radius}&u=Miles&s={salary}&c=USD&',
-            'title_selector': 's-link',
-            'title_word_sep': '+',
-            'salaries': ['150000', '100000', '50000']
-        },
+    },
+    'ziprecruiter': {
+        'url_template': 'https://www.ziprecruiter.com/candidate/search?search={title}&location={zipcode}&days={age}&radius={radius}&refine_by_salary={salary}&',
+        'title_selector': 'job_link',
+        'title_word_sep': '+',
+        'salaries': ['150000', '100000', '50000']
+
+    },
+
+    'indeed': {
+        'url_template': 'https://www.indeed.com/jobs?as_and={title}&as_phr=&as_any=&as_not=&as_ttl=&as_cmp=&st=&as_src=&salary={salary}&radius={radius}&l={zipcode}&fromage={age}&limit=500&sort=&psf=advsrch',
+        'title_selector': 'turnstileLink',
+        'title_word_sep': '+',
+        'salaries': ['150000', '100000', '50000'],
+    },
 
 }
 
@@ -34,7 +48,7 @@ GEO_ZIPS = {
 
 
 TITLES = {
-    'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 60, 'automation': 30, 'automated': 30, 'engineer': 20, 'testing': 70},
+    'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 90, 'sqa': 90, 'sdet': 100, 'test': 60, 'automation': 40, 'automated': 40, 'engineer': 20, 'testing': 60},
      SKILL_KEYWORDS_QA],
     #'data science engineer': [{'data':60, 'science':30, 'engineer':30, 'scientist': 30, 'quantitative': 50, 'analyst':40}], SKILL_KEYWORDS_QA],
 
@@ -89,5 +103,7 @@ TITLES = {
         'title_word_sep': '+',
         'salaries': ['150000', '100000' ,'50000'],
     },
+
+
 
 '''

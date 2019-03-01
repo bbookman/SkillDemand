@@ -1,5 +1,5 @@
 from datetime import datetime
-import ssl
+import ssl, pdb
 import re
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -88,9 +88,8 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         skill_counts.setdefault(skill, 0)
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
+    found_match_on_page = False
     for page in range(1, 4):
-        print(f'Page:{page}')
-        print(f'Site: {site_id}')
         job_links = list()
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
@@ -113,6 +112,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             url += f'pg={page}'
         try:
             browser.get(url)
+            print(f'site:{site_id}, page:{page}, url:{url}')
         except ConnectionRefusedError as c:
             #print(f'ConnectionRefusedError: {url} \n {c}')
             logging.debug(f'ConnectionRefusedError: {url} \n {c}')
@@ -122,11 +122,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         not_met = 0
         for title_index in range(1,26):
             try:
-
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
                     jtitles = [link.text for link in job_links if link.text not in missing_titles]
-                    hrefs = [link.get_attribute('href') for link in job_links]
+                    hrefs = [link.get_attribute('href') for link in job_links if title_selector in link.get_attribute('href') ]
+
                 if site_id == 'careerbuilder':
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     jtitles = [link.text for link in job_links if link.text not in missing_titles]
@@ -161,16 +161,13 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
+                    found_match_on_page = True
                     matching_titles.add(t)
-                    #logging.info(f'MET THRESHOLD: {t}')
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
                     try:
-                        print(f'Getting body: {t}')
                         new_tab.get(job_description_url)
                         body = new_tab.find_element_by_tag_name('body').text
-                        if body:
-                            print(f'Got body: {t}')
                         new_tab.close()
                     except ConnectionRefusedError:
                         print(f'ConnectionRefusedError: {url}')
@@ -188,8 +185,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     break
         if site_id == 'indeed':
             break
-       # browser.close()
-       # browser.quit()
+        if not found_match_on_page:
+            print('NO MATCHES FOUND ON PAGE, SKIPPING')
+            break
     return skill_counts
 
 
@@ -217,7 +215,7 @@ if __name__ == "__main__":
                     else:
                         salaries.setdefault(salary, dict())
                     for zip in GEO_ZIPS[geo]:
-                        print('Working...')
+                        print(f'zip:{zip}')
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
@@ -225,7 +223,7 @@ if __name__ == "__main__":
                         for skill, value in skill_counts.items():
                             skill_summary.setdefault(skill,0)
                             skill_summary[skill] += value
-                        cp = copy.deepcopy(skill_summary)  #NOT EXACTLY WORKING AS EXPECTED
+                        cp = copy.deepcopy(skill_summary)
                         for k, v in cp.items():
                             if v == 0:
                                 skill_summary.pop(k)
