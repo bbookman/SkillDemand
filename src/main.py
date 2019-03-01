@@ -2,7 +2,7 @@ from datetime import datetime
 import ssl
 import re
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 import copy
 import logging
 from constants import *
@@ -86,9 +86,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
     """
     for skill in skill_keywords:
         skill_counts.setdefault(skill, 0)
-    browser = _start_driver()
+
     job_title = _build_job_title(title, title_separator)
-    for page in range(1, 5):
+    for page in range(1, 4):
+        browser = _start_driver()
+        not_met = 0
         print(f'Page:{page}')
         job_links = list()
         if site_id == 'indeed':
@@ -96,14 +98,6 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         if site_id == 'careerbuilder':
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page_number={page}'
-            try:
-                no_more_pages = browser.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
-                if no_more_pages:
-                    #print(f'NO MORE PAGES')
-                    break
-            except NoSuchElementException:
-                logging.debug('ignore me')
-
         if site_id == 'ziprecruiter':
             url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
             url += f'page={page}'
@@ -112,15 +106,31 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
             url += f'pg={page}'
         try:
             browser.get(url)
+
         except ConnectionRefusedError as c:
             #print(f'ConnectionRefusedError: {url} \n {c}')
-            logging.debug(f'ConnectionRefusedError: {url} \n {c}')
+            logging.info(f'ConnectionRefusedError: {url} \n {c}')
+            print(f'ConnectionRefusedError: {url} \n {c}')
         except NewConnectionError as n:
             #print(f'NewConnectionError: {url} \n {n}')
             logging.debug(f'NewConnectionError: {url} \n {n}')
+        except WebDriverException:
+            browser.quit()
+            break
+        try:
+            no_more_pages = browser.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
+            if no_more_pages:
+                print(f'NO MORE PAGES')
+                break
+        except NoSuchElementException:
+            continue
+        except WebDriverException as w:
+            logging.info(f'WebDriverException \nerror: {w} \nurl: {url}')
+            browser.quit()
+            break
         for title_index in range(1,26):
+            no_such = 0
             try:
-
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
                     jtitles = [link.text for link in job_links]
@@ -135,9 +145,15 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     hrefs = [link.get_attribute('href') for link in job_links]
             except NoSuchElementException as e:
                 element = title_selector.format(title_index)
-                logging.debug(f'NoSuchElementException: {element} \n {e}')
+                logging.info(f'NoSuchElementException: {element} \n {e}')
+                print(f'NoSuchElementException: {element} - ITS OKAY')
+                no_such+=1
+                if no_such >= 10:
+                    print('TOO MUCH NO SUCH ELEMENT, SKIPPING')
+                    logging.info('TOO MUCH NO SUCH ELEMENT, SKIPPING')
+                    break
                 continue
-            not_met = 0
+
             for index, t in enumerate(jtitles):
                 #skip if already seen  NOT APPLICABLE FOR CERTAIN JOB TITLES
                 #if t in matching_titles or t in missing_titles:
@@ -145,6 +161,8 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 #skip if too many not met
                 if not_met == 10:
                     print('TOO MANY NOT MET, SKIPPING')
+                    logging.info('TOO MANY NOT MET, SKIPPING')
+                    not_met = 0
                     break
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
@@ -156,12 +174,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                             match += value
                 if match < threshold:
                     if t in missing_titles:  #okay to skip here
-                        continue
+                        break
                     missing_titles.add(t)
                     print(f'THRESHOLD NOT MET: {t}')
                     not_met +=1
                     logging.debug(f'THRESHOLD NOT MET: {t}')
-                    continue
                 else:
                     #if t in matching_titles:  #NOT APPLICABLE FOR CERTAIN TITLES
                     #    continue
@@ -173,10 +190,10 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     try:
                         new_tab.get(job_description_url)
                         body = new_tab.find_element_by_tag_name('body').text
-                        new_tab.close()
-                    except ConnectionRefusedError:
-                        print(f'ConnectionRefusedError: {url}')
-                        logging.debug(f'ConnectionRefusedError: {url}')
+                        new_tab.quit()
+                    except ConnectionRefusedError as c:
+                        print(f'ConnectionRefusedError: {url}\n{c}')
+                        logging.info(f'ConnectionRefusedError: {url}\n{c}')
                         break
                     sbody = body.split()
                     for skill in skill_keywords:
@@ -184,13 +201,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                             if skill.lower() == word.lower():
                                 skill_counts[skill] += 1
                                 break
-
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     break
         if site_id == 'indeed':
             break
-       # browser.close()
-       # browser.quit()
+        browser.quit()
     return skill_counts
 
 
@@ -218,13 +233,21 @@ if __name__ == "__main__":
             weights = TITLES[title][0]
             titles.setdefault(title, 'DEFAULT TITLE')
             for geo in GEO_ZIPS.keys():
+                time = make_time_string()
+                print(f'START GEO:{geo}: {time} ')
+                logging.info(f'START GEO:{geo}: {time} ')
                 for salary in SITES_DICT[site_id]['salaries']:
+                    time = make_time_string()
+                    print(f'START SALARY:{salary}: {time} ')
+                    logging.info(f'START SALARY:{salary}: {time} ')
                     if site_id =='careerbuilder':
                         salaries.setdefault(salary+'000', dict())
                     else:
                         salaries.setdefault(salary, dict())
                     for zip in GEO_ZIPS[geo]:
-                        print('Working...')
+                        time = make_time_string()
+                        print(f'START ZIP: {zip}: {time}')
+                        logging.info(f'START ZIP: {zip}: {time}')
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
@@ -237,14 +260,22 @@ if __name__ == "__main__":
                             if v == 0:
                                 skill_summary.pop(k)
                         zcode[zip] = skill_summary
+                        time = make_time_string()
+                        print(f'END ZIP: {zip}: {time}')
+                        logging.info(f'END ZIP: {zip}: {time}')
                     if site_id == 'careerbuilder' and len(salary)<=3:
                         salary+= '000'
                     salaries[salary] = zcode
+                    time = make_time_string()
+                    print(f'END SALARY {salary}: {time}')
+                    logging.info(f'END SALARY {salary}: {time}')
                 area[geo] = salaries
-                time = make_time_string()
-                print(f'END TITLE {title}: {time}')
-                logging.info(f'END TITLE {title}: {time}')
+                print(f'END GEO: {geo}: {time}')
+                logging.info(f'END GEO: {geo}: {time}')
             titles[title] = area
+            time = make_time_string()
+            print(f'END TITLE {title}: {time}')
+            logging.info(f'END TITLE {title}: {time}')
         time = make_time_string()
         print(f'END {site_id}: {time} ')
         logging.info(f'END {site_id}: {time} ')
