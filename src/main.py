@@ -90,6 +90,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
     job_title = _build_job_title(title, title_separator)
     for page in range(1, 4):
         print(f'Page:{page}')
+        print(f'Site: {site_id}')
         job_links = list()
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
@@ -118,12 +119,13 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         except NewConnectionError as n:
             #print(f'NewConnectionError: {url} \n {n}')
             logging.debug(f'NewConnectionError: {url} \n {n}')
+        not_met = 0
         for title_index in range(1,26):
             try:
 
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
-                    jtitles = [link.text for link in job_links if link.text  not in missing_titles]
+                    jtitles = [link.text for link in job_links if link.text not in missing_titles]
                     hrefs = [link.get_attribute('href') for link in job_links]
                 if site_id == 'careerbuilder':
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
@@ -137,11 +139,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 element = title_selector.format(title_index)
                 logging.debug(f'NoSuchElementException: {element} \n {e}')
                 continue
-            not_met = 0
             for index, t in enumerate(jtitles):
                 #skip if too many not met
                 if not_met == 10:
                     print('TOO MANY NOT MET, SKIPPING')
+                    not_met = 0
                     break
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
@@ -164,8 +166,11 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     job_description_url = hrefs[index]
                     new_tab = _start_driver()
                     try:
+                        print(f'Getting body: {t}')
                         new_tab.get(job_description_url)
                         body = new_tab.find_element_by_tag_name('body').text
+                        if body:
+                            print(f'Got body: {t}')
                         new_tab.close()
                     except ConnectionRefusedError:
                         print(f'ConnectionRefusedError: {url}')
@@ -176,6 +181,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                         for word in sbody:
                             if skill.lower() == word.lower():
                                 skill_counts[skill] += 1
+                                print(f'Found skill: {skill}')
                                 break
 
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
