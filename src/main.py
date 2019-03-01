@@ -88,7 +88,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         skill_counts.setdefault(skill, 0)
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
-    for page in range(1, 5):
+    for page in range(1, 4):
         print(f'Page:{page}')
         job_links = list()
         if site_id == 'indeed':
