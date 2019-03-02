@@ -26,6 +26,8 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def _start_driver():
+    #d = make_date_string()          # service_args=["--verbose", "--log-path=\\log_string]
+    #log_string = f'chromedriver-{d}.log'
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
@@ -162,14 +164,17 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
-                        found_match_on_page = True
-                        matching_titles.add(t)
-                        if skip_dups and t in matching_titles: 
-                            print(f'Skipping duplicate: {t}')
-                            logging.debug(f'Skipping duplicate: {t}')
-                            break
-                        job_description_url = hrefs[index]
-                        new_tab = _start_driver()
+                    pdb.set_trace()
+                    found_match_on_page = True
+                    matching_titles.add(t)
+                    is_in = t in matching_titles
+                    print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
+                    if skip_dups and t in matching_titles:
+                        print(f'Skipping duplicate: {t}')
+                        logging.debug(f'Skipping duplicate: {t}')
+                        break
+                    job_description_url = hrefs[index]
+                    new_tab = _start_driver()
                     try:
                         new_tab.get(job_description_url)
                         body = new_tab.find_element_by_tag_name('body').text
@@ -187,6 +192,7 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                             if skill.lower() == word.lower():
                                 skill_counts[skill] += 1
                                 print(f'Found skill: {skill}')
+                                print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
                                 break
 
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
