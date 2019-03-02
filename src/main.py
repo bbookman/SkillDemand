@@ -89,7 +89,13 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
     browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
     found_match_on_page = False
+    not_met = 0
     for page in range(1, 4):
+        #skip if too many not met
+        if not_met == 10:
+            print('TOO MANY NOT MET, SKIPPING')
+            not_met = 0
+            break
         job_links = list()
         if site_id == 'indeed':
             url = _build_site_url( site_id, site_url_template, job_title, salary, zip, radius, age,)
@@ -119,7 +125,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
         except NewConnectionError as n:
             #print(f'NewConnectionError: {url} \n {n}')
             logging.debug(f'NewConnectionError: {url} \n {n}')
-        not_met = 0
+
         for title_index in range(1,26):
             try:
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
@@ -139,12 +145,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 element = title_selector.format(title_index)
                 logging.debug(f'NoSuchElementException: {element} \n {e}')
                 continue
-            for index, t in enumerate(jtitles):
-                #skip if too many not met
-                if not_met == 10:
-                    print('TOO MANY NOT MET, SKIPPING')
-                    not_met = 0
-                    break
+            for index, t in enumerate(jtitles):   #
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 evaluate = t.split()
