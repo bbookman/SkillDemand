@@ -66,9 +66,9 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='60', age='60'): #todo
+def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='60', age='60'): #todo
     """
-
+    :param skip_dups, bool, some job titles are unique enough to skip processing duplicates. To skip set True
     :param site_id: string, site identification such as "indeed" or "monster"
     :param site_url_template: string, url template that will form the request to the job site
     :param title:  string, desired job title
@@ -145,7 +145,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                 element = title_selector.format(title_index)
                 logging.debug(f'NoSuchElementException: {element} \n {e}')
                 continue
-            for index, t in enumerate(jtitles):   #
+            for index, t in enumerate(jtitles):
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 evaluate = t.split()
@@ -162,10 +162,14 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
-                    found_match_on_page = True
-                    matching_titles.add(t)
-                    job_description_url = hrefs[index]
-                    new_tab = _start_driver()
+                        found_match_on_page = True
+                        matching_titles.add(t)
+                        if skip_dups and t in matching_titles: 
+                            print(f'Skipping duplicate: {t}')
+                            logging.debug(f'Skipping duplicate: {t}')
+                            break
+                        job_description_url = hrefs[index]
+                        new_tab = _start_driver()
                     try:
                         new_tab.get(job_description_url)
                         body = new_tab.find_element_by_tag_name('body').text
@@ -173,6 +177,9 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
                     except ConnectionRefusedError:
                         print(f'ConnectionRefusedError: {url}')
                        # logging.info(f'ConnectionRefusedError: {url}')
+                        break
+                    except TimeoutException as t:
+                        logging.debug(t)
                         break
                     sbody = body.split()
                     for skill in skill_keywords:
@@ -184,6 +191,7 @@ def get_skills(skill_counts, site_id, site_url_template, title, title_separator,
 
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
                     break
+        browser.quit()
         if site_id == 'indeed':
             break
         if not found_match_on_page:
@@ -206,6 +214,7 @@ if __name__ == "__main__":
         title_selector = SITES_DICT[site_id]['title_selector']
         site_url_template = SITES_DICT[site_id]['url_template']
         for title in TITLES.keys():
+            skip_dups = TITLES[title][2]
             skill_keywords = TITLES[title][1]
             weights = TITLES[title][0]
             titles.setdefault(title, 'DEFAULT TITLE')
@@ -220,7 +229,7 @@ if __name__ == "__main__":
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
-                        skill_counts = get_skills(skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+                        skill_counts = get_skills(skip_dups, kill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
                         for skill, value in skill_counts.items():
                             skill_summary.setdefault(skill,0)
                             skill_summary[skill] += value
