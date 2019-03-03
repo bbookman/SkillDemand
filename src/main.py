@@ -2,7 +2,7 @@ from datetime import datetime
 import ssl, pdb
 import re
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException, TimeoutException
 import copy
 import logging
 from constants import *
@@ -112,7 +112,7 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                     #print(f'NO MORE PAGES')
                     break
             except NoSuchElementException:
-                logging.debug('ignore me')
+                continue
 
         if site_id == 'ziprecruiter':
             url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
@@ -125,6 +125,9 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
             browser = _start_driver()
             browser.get(url)
 
+        except TimeoutException:
+            print(f'TimeoutException: {url}')
+            break
         except ConnectionRefusedError as c:
             #print(f'ConnectionRefusedError: {url} \n {c}')
             logging.info(f'ConnectionRefusedError: {url} \n {c}')
@@ -135,12 +138,12 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
 
         for title_index in range(1,26):
             no_such = 0
+            jtitles = list()
             try:
                 if site_id == 'indeed' or site_id ==  'stackoverflow':
                     job_links = browser.find_elements_by_class_name(title_selector)
                     jtitles = [link.text for link in job_links if link.text not in missing_titles]
                     hrefs = [link.get_attribute('href') for link in job_links if title_selector in link.get_attribute('href') ]
-
                 if site_id == 'careerbuilder':
                     job_links.append(browser.find_element_by_xpath(title_selector.format(title_index)))
                     jtitles = [link.text for link in job_links if link.text not in missing_titles]
@@ -154,15 +157,15 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                 logging.info(f'NoSuchElementException: {element} \n {e}')
                 print(f'NoSuchElementException: {element} - ITS OKAY')
                 no_such+=1
-                if no_such >= 10:
+                if no_such >= 4:
                     print('TOO MUCH NO SUCH ELEMENT, SKIPPING')
                     logging.info('TOO MUCH NO SUCH ELEMENT, SKIPPING')
                     break
-                continue
             for index, t in enumerate(jtitles):
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 if skip_dups and t in missing_titles:
+                    print('SKIPPING duplicates')
                     break
                 evaluate = t.split()
                 match = 0
