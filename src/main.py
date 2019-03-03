@@ -68,7 +68,7 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='60', age='60'): #todo
+def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='50', age='60'): #todo
     """
     :param skip_dups, bool, some job titles are unique enough to skip processing duplicates. To skip set True
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -86,15 +86,15 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
     UPDATES the global skills_dict
 
     """
+    global matching_titles
     for skill in skill_keywords:
         skill_counts.setdefault(skill, 0)
-    browser = _start_driver()
     job_title = _build_job_title(title, title_separator)
     found_match_on_page = False
     not_met = 0
     for page in range(1, 4):
         #skip if too many not met
-        if not_met == 10:
+        if not_met == 7:
             print('TOO MANY NOT MET, SKIPPING')
             not_met = 0
             break
@@ -105,7 +105,9 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
             url = _build_site_url( site_id, site_url_template, title, salary, zip, radius, age,)
             url += f'page_number={page}'
             try:
-                no_more_pages = browser.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
+                driver = _start_driver()
+                no_more_pages = driver.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
+                driver.quit()
                 if no_more_pages:
                     #print(f'NO MORE PAGES')
                     break
@@ -119,8 +121,9 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
             url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
             url += f'pg={page}'
         try:
-            browser.get(url)
             print(f'site:{site_id}, page:{page}, url:{url}')
+            browser = _start_driver()
+            browser.get(url)
         except ConnectionRefusedError as c:
             #print(f'ConnectionRefusedError: {url} \n {c}')
             logging.debug(f'ConnectionRefusedError: {url} \n {c}')
@@ -150,6 +153,8 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
             for index, t in enumerate(jtitles):
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
+                if skip_dups and t in missing_titles:
+                    break
                 evaluate = t.split()
                 match = 0
                 for word in evaluate:
@@ -164,18 +169,21 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                     continue
                 else:
                     print(f'MET THRESHOLD: {t}')
-                    pdb.set_trace()
                     found_match_on_page = True
-                    matching_titles.add(t)
-                    is_in = t in matching_titles
-                    print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
+                    #print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
                     if skip_dups and t in matching_titles:
                         print(f'Skipping duplicate: {t}')
                         logging.debug(f'Skipping duplicate: {t}')
                         break
-                    job_description_url = hrefs[index]
-                    new_tab = _start_driver()
+                    matching_titles.add(t)
                     try:
+                        job_description_url = hrefs[index]
+                        print(f'JD url: {url}')
+                    except IndexError:
+                        print('IndexError for hrefs')
+                        break
+                    try:
+                        new_tab = _start_driver()
                         new_tab.get(job_description_url)
                         body = new_tab.find_element_by_tag_name('body').text
                         new_tab.close()
@@ -183,16 +191,18 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                         print(f'ConnectionRefusedError: {url}')
                        # logging.info(f'ConnectionRefusedError: {url}')
                         break
-                    except TimeoutException as t:
-                        logging.debug(t)
-                        break
+                    #except TimeoutException as t:
+                    #    print(f'TimeoutException: {url}')
+                    #    logging.debug(t)
+                    #    break
+
                     sbody = body.split()
                     for skill in skill_keywords:
                         for word in sbody:
                             if skill.lower() == word.lower():
                                 skill_counts[skill] += 1
                                 print(f'Found skill: {skill}')
-                                print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
+                                #print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
                                 break
 
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
@@ -204,8 +214,6 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
             print('NO MATCHES FOUND ON PAGE, SKIPPING')
             break
     return skill_counts
-
-
 
 if __name__ == "__main__":
     start = make_time_string()
@@ -235,7 +243,7 @@ if __name__ == "__main__":
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
-                        skill_counts = get_skills(skip_dups, kill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+                        skill_counts = get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
                         for skill, value in skill_counts.items():
                             skill_summary.setdefault(skill,0)
                             skill_summary[skill] += value
@@ -244,9 +252,13 @@ if __name__ == "__main__":
                             if v == 0:
                                 skill_summary.pop(k)
                         zcode[zip] = skill_summary
+                        with open(f'{zip}-RESULTS.txt', 'w') as file:
+                            file.write(str(zcode[zip]))
                     if site_id == 'careerbuilder' and len(salary)<=3:
                         salary+= '000'
                     salaries[salary] = zcode
+                    with open(f'{salary}-RESULTS.txt', 'w') as file:
+                        file.write(str(salaries))
                 area[geo] = salaries
             titles[title] = area
 
