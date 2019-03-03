@@ -50,6 +50,27 @@ SITES_DICT = {
 }
 
 GEO_ZIPS = {
+'San Francisco Bay Area':
+    [95032, 95054, 94010, 94536, 94539, 94402, 94404, 95054, 94010, 94536, 94539, 94402, 94404,
+    94403, 94538, 94560, 94065, 94063, 94027, 94002,
+    94070, 95134, 95002, 94062, 94089, 94301, 94025, 94303,
+    95035, 95140, 94061, 94043, 94304, 94305, 94035, 94306, 94028, 94040, 94022, 94085, 94086,
+    94024, 94087],
+
+
+
+}
+
+
+
+
+
+TITLES = {
+    'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 50, 'automation': 30, 'automated': 30, 'engineer': 20, 'testing': 70},
+     SKILL_KEYWORDS_DEV, True],
+     #'data science engineer': [{'data':60, 'science':30, 'engineer':30, 'scientist': 30, 'quantitative': 50, 'analyst':40}, SKILL_KEYWORDS_DEV],
+}
+'''
 
     'Sufolk County, Boston MA':
     [2101,
@@ -94,18 +115,6 @@ GEO_ZIPS = {
 
 
 
-}
-
-
-
-
-
-TITLES = {
-    'software quality assurance engineer': [{'software': 50, 'quality': 60, 'assurance': 30, 'qa': 80, 'sqa': 90, 'sdet': 100, 'test': 50, 'automation': 30, 'automated': 30, 'engineer': 20, 'testing': 70},
-     SKILL_KEYWORDS_DEV, True],
-     #'data science engineer': [{'data':60, 'science':30, 'engineer':30, 'scientist': 30, 'quantitative': 50, 'analyst':40}, SKILL_KEYWORDS_DEV],
-}
-'''
 'Travis County, Austin TX':[78764,
 78768,
 78767,
@@ -174,10 +183,5 @@ TITLES = {
 78760,
 78759,],
 
-'San Francisco Bay Area':
-    [95032, 95054, 94010, 94536, 94539, 94402, 94404, 95054, 94010, 94536, 94539, 94402, 94404,
-    94403, 94538, 94560, 94065, 94063, 94027, 94002,
-    94070, 95134, 95002, 94062, 94089, 94301, 94025, 94303,
-    95035, 95140, 94061, 94043, 94304, 94305, 94035, 94306, 94028, 94040, 94022, 94085, 94086,
-    94024, 94087],
+
 '''

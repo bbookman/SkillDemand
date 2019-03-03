@@ -271,8 +271,8 @@ if __name__ == "__main__":
                             if v == 0:
                                 skill_summary.pop(k)
                         zcode[zip] = skill_summary
-                        with open(f'{zip}-RESULTS.txt', 'w') as file:
-                            file.write(str(zcode[zip]))
+                        #with open(f'{zip}-RESULTS.txt', 'w') as file:
+                        #    file.write(str(zcode[zip]))
                     if site_id == 'careerbuilder' and len(salary)<=3:
                         salary+= '000'
                     salaries[salary] = zcode
@@ -281,7 +281,18 @@ if __name__ == "__main__":
                 area[geo] = salaries
                 print(f'END GEO: {geo}: {time}')
                 logging.info(f'END GEO: {geo}: {time}')
+                g = ''
+                for word in geo:
+                    g+=word + '_'
+                with open(f'{g}RESULTS.txt', 'w') as file:
+                    file.write(str(area))
             titles[title] = area
+            tl = ''
+            for word in title:
+                tl+= tl+'_'
+            with open(f'{tl}RESULTS.txt', 'w') as file:
+                file.write(str(titles))
+
             time = make_time_string()
             print(f'END TITLE {title}: {time}')
             logging.info(f'END TITLE {title}: {time}')
