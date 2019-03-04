@@ -32,7 +32,16 @@ def _start_driver():
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('window-size=1920x1080')
-    driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
+    try:
+        driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
+    except SessionNotCreatedException as e:
+        print('SessionNotCreatedException - try again')
+        logging.debug(e)
+        try:
+            driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
+        except SessionNotCreatedException as s:
+            print('Terminating')
+            logging.debug(s)
     return driver
 
 
@@ -68,7 +77,7 @@ def _build_job_title(title, title_separator):
     return result[:-1]
 
 
-def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='50', age='60'): #todo
+def get_skills(skip_dups, geo, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip, threshold=90, radius='50', age='60'):
     """
     :param skip_dups, bool, some job titles are unique enough to skip processing duplicates. To skip set True
     :param site_id: string, site identification such as "indeed" or "monster"
@@ -95,7 +104,7 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
     for page in range(1, 4):
         #skip if too many not met
         if not_met == 7:
-            print('TOO MANY NOT MET, SKIPPING')
+            print(f'{geo}: TOO MANY NOT MET, SKIPPING')
             not_met = 0
             break
         job_links = list()
@@ -109,7 +118,6 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                 no_more_pages = driver.find_element_by_xpath("//h3[contains(text(),'Sorry, no results were found based upon your search')]")
                 driver.quit()
                 if no_more_pages:
-                    #print(f'NO MORE PAGES')
                     break
             except NoSuchElementException:
                 continue
@@ -121,7 +129,7 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
             url = _build_site_url(site_id, site_url_template, job_title, salary, zip, radius, age, )
             url += f'pg={page}'
         try:
-            print(f'site:{site_id}, page:{page}, url:{url}')
+            print(f'geo:{geo}, site:{site_id}, page:{page}, url:{url}')
             browser = _start_driver()
             browser.get(url)
 
@@ -158,14 +166,14 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                 print(f'NoSuchElementException: {element} - ITS OKAY')
                 no_such+=1
                 if no_such >= 4:
-                    print('TOO MUCH NO SUCH ELEMENT, SKIPPING')
+                    print(f'{geo}: TOO MUCH NO SUCH ELEMENT, SKIPPING')
                     logging.info('TOO MUCH NO SUCH ELEMENT, SKIPPING')
                     break
             for index, t in enumerate(jtitles):
                 t = re.sub(r"(?<=[A-z])\&(?=[A-z])", " ", t)
                 t = re.sub(r"(?<=[A-z])\-(?=[A-z])", " ", t)
                 if skip_dups and t in missing_titles:
-                    print('SKIPPING duplicates')
+                    print(f'{geo}: SKIPPING duplicates')
                     break
                 evaluate = t.split()
                 match = 0
@@ -175,13 +183,12 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                             match += value
                 if match < threshold:
                     missing_titles.add(t)
-                    print(f'THRESHOLD NOT MET: {t}')
+                    print(f'{geo}: THRESHOLD NOT MET: {t}')
                     not_met +=1
                     logging.debug(f'THRESHOLD NOT MET: {t}')
                 else:
-                    print(f'MET THRESHOLD: {t}')
+                    print(f'{geo}: MET THRESHOLD: {t}')
                     found_match_on_page = True
-                    #print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
                     if skip_dups and t in matching_titles:
                         print(f'Skipping duplicate: {t}')
                         logging.debug(f'Skipping duplicate: {t}')
@@ -212,7 +219,7 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
                         for word in sbody:
                             if skill.lower() == word.lower():
                                 skill_counts[skill] += 1
-                                print(f'Found skill: {skill}')
+                                print(f'{geo}: {title}, skill: {skill}')
                                 #print(f'MATCHING TITLES: {t} \n\n{matching_titles}\n\nTITLE IN MATCHING TITLES{is_in}')
                                 break
             if site_id == 'indeed' or site_id == 'ziprecruiter' or site_id == 'stackoverflow':
@@ -221,7 +228,7 @@ def get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title
         if site_id == 'indeed':
             break
         if not found_match_on_page:
-            print('NO MATCHES FOUND ON PAGE, SKIPPING')
+            print(f'{geo} {zip} NO MATCHES FOUND ON PAGE {page}, SKIPPING')
             break
     return skill_counts
 
@@ -234,9 +241,9 @@ if __name__ == "__main__":
     titles = dict()
 
     for site_id in SITES_DICT.keys():
-        time = make_time_string()
-        print(f'START {site_id}: {time} ')
-        logging.info(f'START {site_id}: {time} ')
+        stime = make_time_string()
+        print(f'PROGREAM START {stime} ')
+        logging.info(f'START {site_id}: {stime} ')
         title_separator = SITES_DICT[site_id]['title_word_sep']
         title_selector = SITES_DICT[site_id]['title_selector']
         site_url_template = SITES_DICT[site_id]['url_template']
@@ -247,6 +254,7 @@ if __name__ == "__main__":
             titles.setdefault(title, 'DEFAULT TITLE')
             for geo in GEO_ZIPS.keys():
                 time = make_time_string()
+                print(f'PROGREAM START WAS {site_id}: {stime} ')
                 print(f'START GEO:{geo}: {time} ')
                 logging.info(f'START GEO:{geo}: {time} ')
                 for salary in SITES_DICT[site_id]['salaries']:
@@ -262,7 +270,7 @@ if __name__ == "__main__":
                         zip = str(zip)
                         zcode.setdefault(zip, dict())
                         skill_counts = dict()
-                        skill_counts = get_skills(skip_dups, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
+                        skill_counts = get_skills(skip_dups, geo, skill_counts, site_id, site_url_template, title, title_separator, title_selector, salary, skill_keywords, weights, zip,)
                         for skill, value in skill_counts.items():
                             skill_summary.setdefault(skill,0)
                             skill_summary[skill] += value
@@ -271,28 +279,26 @@ if __name__ == "__main__":
                             if v == 0:
                                 skill_summary.pop(k)
                         zcode[zip] = skill_summary
-                        #with open(f'{zip}-RESULTS.txt', 'w') as file:
-                        #    file.write(str(zcode[zip]))
                     if site_id == 'careerbuilder' and len(salary)<=3:
                         salary+= '000'
                     salaries[salary] = zcode
-                    with open(f'{salary}-RESULTS.txt', 'w') as file:
-                        file.write(str(salaries))
+                    #with open(f'{salary}-RESULTS.txt', 'w') as file:
+                    #    file.write(str(salaries))
+                    #    file.close()
                 area[geo] = salaries
                 print(f'END GEO: {geo}: {time}')
                 logging.info(f'END GEO: {geo}: {time}')
+                gs = geo.split()
                 g = ''
-                for word in geo:
-                    g+=word + '_'
+                for word in gs:
+                    g+=word+'_'
                 with open(f'{g}RESULTS.txt', 'w') as file:
                     file.write(str(area))
+                    file.close()
             titles[title] = area
-            tl = ''
-            for word in title:
-                tl+= tl+'_'
-            with open(f'{tl}RESULTS.txt', 'w') as file:
+            with open(f'{title}_{g}-RESULTS.txt', 'w') as file:
                 file.write(str(titles))
-
+                file.close()
             time = make_time_string()
             print(f'END TITLE {title}: {time}')
             logging.info(f'END TITLE {title}: {time}')
@@ -301,11 +307,12 @@ if __name__ == "__main__":
         logging.info(f'END {site_id}: {time} ')
 
 
-    print(f'PROGRAM START TIME:{start}')
-    logging.info(f'PROGRAM START TIME:{start}')
+    print(f'PROGRAM START TIME:{stime}')
+    logging.info(f'PROGRAM START TIME:{stime}')
     end = make_time_string()
     print(f'PROGRAM END TIME:{end}')
     logging.info(f'PROGRAM END TIME:{end}')
 
-with open('RESULTS.txt', 'w') as file:
+with open(f'{title}_{geo}_RESULTS.txt', 'w') as file:
     file.write(str(titles))
+    file.close()
