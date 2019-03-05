@@ -140,9 +140,15 @@ def get_skills(skip_dups, geo, skill_counts, site_id, site_url_template, title, 
             #print(f'ConnectionRefusedError: {url} \n {c}')
             logging.info(f'ConnectionRefusedError: {url} \n {c}')
             print(f'ConnectionRefusedError: {url} \n {c}')
+            break
         except NewConnectionError as n:
             #print(f'NewConnectionError: {url} \n {n}')
             logging.debug(f'NewConnectionError: {url} \n {n}')
+            break
+        except WebDriverException as w:
+            print(f'WebDriverException \n w')
+            logging.debug(t)
+            break
 
         for title_index in range(1,26):
             no_such = 0
@@ -209,10 +215,14 @@ def get_skills(skip_dups, geo, skill_counts, site_id, site_url_template, title, 
                         print(f'ConnectionRefusedError: {url}\n{c}')
                         logging.info(f'ConnectionRefusedError: {url}\n{c}')
                         break
-                    #except TimeoutException as t:
-                    #    print(f'TimeoutException: {url}')
-                    #    logging.debug(t)
-                    #    break
+                    except TimeoutException as t:
+                         print(f'TimeoutException: {url}')
+                         logging.debug(t)
+                         break
+                    except WebDriverException as w:
+                        print(f'WebDriverException \n w')
+                        logging.debug(t)
+                        break
 
                     sbody = body.split()
                     for skill in skill_keywords:
@@ -282,9 +292,6 @@ if __name__ == "__main__":
                     if site_id == 'careerbuilder' and len(salary)<=3:
                         salary+= '000'
                     salaries[salary] = zcode
-                    #with open(f'{salary}-RESULTS.txt', 'w') as file:
-                    #    file.write(str(salaries))
-                    #    file.close()
                 area[geo] = salaries
                 print(f'END GEO: {geo}: {time}')
                 logging.info(f'END GEO: {geo}: {time}')
@@ -292,13 +299,10 @@ if __name__ == "__main__":
                 g = ''
                 for word in gs:
                     g+=word+'_'
-                with open(f'{g}RESULTS.txt', 'w') as file:
+                with open(f'{g}_{t}_RESULTS.txt', 'w') as file:
                     file.write(str(area))
                     file.close()
             titles[title] = area
-            with open(f'{title}_{g}-RESULTS.txt', 'w') as file:
-                file.write(str(titles))
-                file.close()
             time = make_time_string()
             print(f'END TITLE {title}: {time}')
             logging.info(f'END TITLE {title}: {time}')
