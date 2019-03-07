@@ -5,7 +5,6 @@ from constants import *
 from utility import *
 
 
-
 logging.basicConfig(filename='execution_{date}.log'.format(date = make_date_string()), level=logging.INFO)
 ssl._create_default_https_context = ssl._create_unverified_context
 
