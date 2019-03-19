@@ -66,7 +66,7 @@ if __name__ == "__main__":
                 g = ''
                 for word in gs:
                     g+=word+'_'
-                with open(f'{g}_{t}_RESULTS.txt', 'w') as file:
+                with open(f'{g}_{title}_RESULTS.txt', 'w') as file:
                     file.write(str(area))
                     file.close()
             titles[title] = area
